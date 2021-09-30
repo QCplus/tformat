@@ -265,3 +265,5 @@ class TemplateFormatter {
             this._inputElement.value = '';
     }
 }
+
+module.exports = TemplateFormatter;

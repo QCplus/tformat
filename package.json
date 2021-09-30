@@ -1,0 +1,31 @@
+{
+  "name": "tformat.js",
+  "version": "1.0.0",
+  "description": "lightweight library for number formatting",
+  "main": "tformat.js",
+  "directories": {
+    "example": "example",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QCplus/tformat.git"
+  },
+  "keywords": [
+    "js",
+    "javascript",
+    "input",
+    "format",
+    "formatter",
+    "vanilla"
+  ],
+  "author": "qcplus",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/QCplus/tformat/issues"
+  },
+  "homepage": "https://github.com/QCplus/tformat#readme"
+}
