@@ -1,0 +1,82 @@
+main {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+input, button {
+    line-height: 35px;
+    font-size: 16px;
+}
+
+input {
+    box-shadow: 4px 4px 8px 0px rgba(34, 60, 80, 0.2) inset;
+    border-radius: 4px;
+    border: 1px solid #a4a4a4;
+    padding-left: 6px;
+    color: #313131;
+    transition: all .3s ease;
+}
+input:focus {
+    background: #d7d7d7;
+    outline: #d7b6ff solid 2px;
+}
+input:not(:last-child) {
+    margin-right: 4px;
+}
+
+.example-block:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+}
+
+button {
+    min-width: 60px;
+    border-radius: 4px;
+    padding: 8px;
+    background: #535353;
+    color: white;
+    border: 2px solid transparent;
+    transition: all .2s ease;
+}
+
+button:hover {
+    cursor: pointer;
+    background: #5f5f5f;
+    color: lightgray;
+}
+
+button:active {
+    border: 2px solid #d7b6ff;
+}
+
+select {
+    border: 1px solid #a4a4a4;
+    border-radius: 4px;
+}
+
+.list-header {
+    margin-bottom: 0;
+}
+
+ul {
+    margin-top: 0;
+}
+
+input.invalid {
+    border: 1px solid rgb(255, 79, 79);
+}
+
+.clr-invalid {
+    color:rgb(212, 53, 53);
+}
+
+.clr-valid {
+    color: rgb(41, 192, 41);
+}
+
+.faded {
+    color: lightgray;
+}
