@@ -2,13 +2,17 @@
 
 Tformat.js is a lightweight library for number formatting (credit card and phone numbers, for example)
 
-## Installation
-
-Download tformat.js
-
 ## Usage
 
-Download minified tformat.js and import it
+Download tformat.js via npm
+
+```bash
+npm i tformat.js
+```
+
+or directly from the [repo](https://github.com/QCplus/tformat/blob/main/tformat.min.js).
+
+Then import it
 
 ```html
 <script src="tformat.min.js"></script>
