@@ -1,12 +1,12 @@
 {
   "name": "tformat.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "lightweight library for number formatting",
   "main": "tformat.js",
-  "directories": {
-    "example": "example",
-    "test": "tests"
-  },
+  "files": [
+      "tformat.js",
+      "tformat.min.js"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

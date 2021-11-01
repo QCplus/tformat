@@ -176,7 +176,7 @@ class TemplateFormatter {
     /**
      * 
      * @param {string} text 
-     * @returns 
+     * @returns {string}
      */
     pushPostfixIfNeeded(text) {
         let startOfPostfix = this.template.lastIndexOf(this.templateChar);
@@ -237,6 +237,12 @@ class TemplateFormatter {
         return true;
     }
 
+    /**
+     * Format text and update class state
+     * @param {string} newInputText 
+     * @param {boolean} wasCharDeleted 
+     * @returns {string} processed text
+     */
     _processNewInput(newInputText, wasCharDeleted) {
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
