@@ -220,21 +220,40 @@ class TemplateFormatter {
     }
 
     /**
-     * 
+     * Searches for the first character that differ from template.
      * @param {string} text 
-     * @returns {boolean}
+     * @returns {number} index of the first character that differ from template. If text and template are equal than -1
      */
-    isPartiallyMatchTemplate(text) {
-        if (!text)
-            return false;
-
+    _getFirstTemplateMismatch(text) {
         let prefixIndx = this.getSuitablePrefixIndex(text);
         let fullTemplate = this._prefixes[prefixIndx] + this.template;
 
         for (let i = 0; i < Math.min(text.length, fullTemplate.length); i++)
             if (text[i] !== fullTemplate[i] && (fullTemplate[i] !== this.templateChar || this.nonTemplateValueRegExp.test(text[i])))
-                return false;
-        return true;
+                return i;
+
+        if (text.length != fullTemplate.length)
+            return Math.min(text.length, fullTemplate.length)
+        
+        return -1;
+    }
+
+    /**
+     * 
+     * @param {string} text 
+     * @returns {boolean}
+     */
+    isPartiallyMatchTemplate(text) {
+        if (text) {
+            let firstMismatch = this._getFirstTemplateMismatch(text);
+
+            return firstMismatch >= text.length || firstMismatch == -1;
+        }
+        return false;
+    }
+
+    isMatchTemplate(text) {
+        return text && this._getFirstTemplateMismatch(text) == -1;
     }
 
     /**

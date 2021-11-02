@@ -100,6 +100,44 @@ describe("Independent methods", function() {
         assert.equal(tformat.formatText("123456"), "+123-(456)")
         assert.equal(tformat.formatText("-1 23  45 6"), "+123-(456)")
     })
+
+    it("Test _getFirstTemplateMismatch", function() {
+        let tformat = new TemplateFormatter(INPUT_ID, {
+            template: "+123-(xxx)"
+        });
+
+        assert.equal(tformat._getFirstTemplateMismatch("+123-(123)"), -1);
+        assert.equal(tformat._getFirstTemplateMismatch(""), 0);
+        assert.equal(tformat._getFirstTemplateMismatch("+124-(456)"), 3);
+        assert.equal(tformat._getFirstTemplateMismatch("+123-(f45)"), 6);
+        assert.equal(tformat._getFirstTemplateMismatch("+123-(123"), 9);
+        assert.equal(tformat._getFirstTemplateMismatch("+123-(1234)"), 9);
+    })
+
+    it("Test isPartiallyMatchTemplate", function() {
+        tformat = new TemplateFormatter(INPUT_ID, {
+            template: "1 (xxx) xxx"
+        });
+
+        assert.equal(tformat.isPartiallyMatchTemplate("1 (123) "), true, "1 (123) ");
+        assert.equal(tformat.isPartiallyMatchTemplate(""), false, "Empty string doesn't match template");
+        assert.equal(tformat.isPartiallyMatchTemplate("9 (123) "), false, "9 (123) ");
+        assert.equal(tformat.isPartiallyMatchTemplate("1 (12) "), false, "9 (123) ");
+        assert.equal(tformat.isPartiallyMatchTemplate("1 (123) 123 456 789"), false, "9 (123) ");
+        assert.equal(tformat.isPartiallyMatchTemplate("1 (123) 123"), true, "Full match");
+    })
+
+    it("Test isMatchTemplate", function() {
+        let tformat = new TemplateFormatter(INPUT_ID, {
+            template: "+123-(xxx)"
+        });
+
+        assert.equal(tformat.isMatchTemplate("+123-"), false, "+123-");
+        assert.equal(tformat.isMatchTemplate("+123-(345"), false, "+123-(345");
+        assert.equal(tformat.isMatchTemplate("+123-(345)"), true, "+123-(345)");
+        assert.equal(tformat.isMatchTemplate("+456-(345)"), false, "+456-(345)");
+        assert.equal(tformat.isMatchTemplate("+123-(1234)"), false, "+123-(1234)");
+    })
 })
 
 describe("Prefixes", function() {
@@ -371,18 +409,6 @@ describe("General", function() {
         
         assert.equal(tformat.template, "xxxt");
         assert.deepEqual(tformat._prefixes, ['2 ']);
-    })
-
-    it("Test isPartiallyMatchTemplate", function() {
-        tformat = new TemplateFormatter(INPUT_ID, {
-            template: "1 (xxx) xxx xx"
-        });
-
-        assert.equal(tformat.isPartiallyMatchTemplate("1 (123) "), true);
-
-        assert.equal(tformat.isPartiallyMatchTemplate("9 (123) "), false);
-
-        assert.equal(tformat.isPartiallyMatchTemplate("1 (12) "), false);
     })
 })
 
