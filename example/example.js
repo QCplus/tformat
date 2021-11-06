@@ -7,12 +7,17 @@ function initPhoneInput() {
         /*showPrefixOnFocus: true,*/
         prefixes: ["+4 ("]
     });
+
+    submitPhoneNumber.formatter = phoneFormatter;
 }
 
 function submitPhoneNumber(event, form) {
     event.preventDefault();
 
-    alert('Form was serialized as ' + new FormData(form).get('phone'))
+    if (submitPhoneNumber.formatter.isInputValueValid())
+        alert('Form was serialized as ' + new FormData(form).get('phone'))
+    else
+        alert('Phone number is invalid');
 }
 
 function initCardInput() {

@@ -257,6 +257,12 @@ class TemplateFormatter {
         return text && this._getFirstTemplateMismatch(text) == -1;
     }
 
+    isInputValueValid() {
+        if (this._inputElement)
+            return this.isMatchTemplate(this._inputElement.value);
+        throw "There is no input element";
+    }
+
     /**
      * Format text and update class state
      * @param {string} newInputText 
