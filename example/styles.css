@@ -3,12 +3,12 @@ main {
     grid-template-columns: repeat(3, 1fr);
 }
 
-input, button {
+input, button, textarea {
     line-height: 35px;
     font-size: 16px;
 }
 
-input {
+input, textarea {
     box-shadow: 4px 4px 8px 0px rgba(34, 60, 80, 0.2) inset;
     border-radius: 4px;
     border: 1px solid #a4a4a4;
@@ -16,16 +16,12 @@ input {
     color: #313131;
     transition: all .3s ease;
 }
-input:focus {
+input:focus, textarea:focus {
     background: #d7d7d7;
     outline: #d7b6ff solid 2px;
 }
 input:not(:last-child) {
     margin-right: 4px;
-}
-
-.example-block:not(:last-child) {
-    margin-bottom: 10px;
 }
 
 .row {
@@ -79,4 +75,28 @@ input.invalid {
 
 .faded {
     color: lightgray;
+}
+
+.examples-container {  
+    display: grid;  
+    grid-gap: 5px;  
+    grid-template-columns: repeat(auto-fit, 350px);
+    grid-template-rows: repeat(2, 350px);
+    justify-content: center;
+}
+
+.example-block {
+    margin: 0 auto;
+}
+
+.example-block .row {
+    justify-content: center;
+}
+
+.example-block h2 {
+    text-align: center;
+}
+
+.example-block textarea {
+    width: 100%;
 }

@@ -1,6 +1,6 @@
 {
   "name": "tformat.js",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "lightweight library for number formatting",
   "main": "tformat.js",
   "files": [

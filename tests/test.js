@@ -410,6 +410,17 @@ describe("General", function() {
         assert.equal(tformat.template, "xxxt");
         assert.deepEqual(tformat._prefixes, ['2 ']);
     })
+
+    it("Test using without input", function() {
+        tformat = new TemplateFormatter("", {
+            template: "1 x x x",
+            prefixes: ["2 ", "3 "]
+        });
+
+        assert.equal(tformat.isMatchTemplate("1 2 3 4"), true, "1 2 3 4");
+        assert.equal(tformat.isMatchTemplate("5 4 3 2"), false, "5 4 3 2");
+        assert.equal(tformat.isMatchTemplate("2 3 4 5"), true, "2 3 4 5");
+    })
 })
 
 describe("Phone", function() {

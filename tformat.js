@@ -68,16 +68,25 @@ class TemplateFormatter {
      * @param {object} props 
      */
     constructor(inputElement, props) {
-        if (!inputElement)
-            throw "Input element must specified";
-        if (typeof (inputElement) == "string") {
-            this._inputElement = document.getElementById(inputElement);
-            if (!this._inputElement)
-                throw "There is no element with id: " + inputElement;
-        } else if (typeof (inputElement) == "object" && Object.prototype.toString.call(inputElement) == "[object HTMLInputElement]")
-            this._inputElement = inputElement;
-        else
-            throw "Unknown input element type";
+        if (inputElement) {
+            if (typeof (inputElement) == "string") {
+                this._inputElement = document.getElementById(inputElement);
+                if (!this._inputElement)
+                    throw "There is no element with id: " + inputElement;
+            } 
+            else if (typeof (inputElement) == "object" && Object.prototype.toString.call(inputElement) == "[object HTMLInputElement]")
+                this._inputElement = inputElement;
+            else
+                throw "Unknown input element type";
+
+            if (props.showPrefixOnFocus)
+                this.showPrefixOnFocus = true;
+
+            if (props.createHiddenInput)
+                this._initHiddenInput(props.templateForHidden);
+
+            this._initEvents();
+        }
 
         this._prefixIndex = 0;
         this._prefixes = [];
@@ -89,14 +98,6 @@ class TemplateFormatter {
 
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
-
-        if (props.showPrefixOnFocus)
-            this.showPrefixOnFocus = true;
-
-        if (props.createHiddenInput)
-            this._initHiddenInput(props.templateForHidden);
-
-        this._initEvents();
     }
 
     /**
@@ -234,7 +235,7 @@ class TemplateFormatter {
 
         if (text.length != fullTemplate.length)
             return Math.min(text.length, fullTemplate.length)
-        
+
         return -1;
     }
 
