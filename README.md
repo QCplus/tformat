@@ -4,6 +4,8 @@ Tformat.js is a lightweight library for number formatting (credit card and phone
 
 ## Usage
 
+Examples can be found [here](https://qcplus.github.io/tformat/)
+
 Download tformat.js via npm
 
 ```bash
