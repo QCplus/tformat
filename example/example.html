@@ -8,6 +8,8 @@
     <meta name="theme-color" content="#000000" />
     <script type="text/javascript" src="../tformat.min.js"></script>
     <link rel="stylesheet" href="styles.css" />
+
+    <link href="./prism.css" rel="stylesheet" />
     <title>TFormat example</title>
 </head>
 
@@ -17,45 +19,127 @@
         <div class="example-block">
             <h2>Phone serialization</h2>
 
-            <form class="row" onsubmit="submitPhoneNumber(event, this)">
-                <input id="phoneInput" name="phone" placeholder="+x (xxx) xxx xx xx" required />
+            <div class="example-block__descr">
+                <p>In this example we're creating input for phone number that starts with <b>+1</b> or <b>+4</b>.
+                    Property <b>createHiddenInput</b> tells tformat to create a hidden input that stores
+                    unformatted phone number for form. Unformatted value can be shown by pressing button.</p>
 
-                <button type="submit">Send</button>
-            </form>
+                <form class="row" onsubmit="submitPhoneNumber(event, this)">
+                    <input id="phoneInput" name="phone" placeholder="+x (xxx) xxx xx xx" required />
+
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+
+            <pre><code class="language-js">new TemplateFormatter(
+    'phoneInput', 
+    {
+        template: '+1 (xxx) xxx xx xx',
+        createHiddenInput: true,
+        prefixes: ["+4 ("]
+    });</code></pre>
         </div>
+
         <div class="example-block">
             <h2>Handle input change</h2>
 
-            <div class="row">
-                <input id="cardInput" />
+            <div class="example-block__descr">
+                <p>In this example we're using tformat onchange event to show card payment system. <b>American
+                        Express</b> cards starts with
+                    3 (it's the first template prefix), <b>VISA</b> cards starts with 4 (it's the second template
+                    prefix) and
+                    so on.</p>
+
+                <div class="example-block__descr__cards">
+                    <input id="cardInput" />
+
+                    <h4 class="list-header">Acceptable cards:</h4>
+                    <ul id="creditCardList">
+                        <li data-card-type="0">American Express</li>
+                        <li data-card-type="1">VISA</li>
+                        <li data-card-type="2">Mastercard</li>
+                    </ul>
+                </div>
             </div>
 
-            <h4 class="list-header">Acceptable cards:</h4>
-            <ul id="creditCardList">
-                <li data-card-type="0">American Express</li>
-                <li data-card-type="1">VISA</li>
-                <li data-card-type="2">Mastercard</li>
-            </ul>
+            <pre><code class="language-js">function highlightCardType(cardType) {
+    creditCardList = document.getElementById('creditCardList');
+
+    creditCardList.querySelectorAll('li').forEach(t => {
+        t.classList.remove('clr-valid');
+        if (t.dataset['cardType'] == cardType)
+            t.classList.add('clr-valid');
+    })
+    
+    if (cardType == -1)
+        creditCardList.classList.remove('faded');
+    else
+        creditCardList.classList.add('faded');
+}
+
+let cardInput = document.getElementById('cardInput');
+/* We can also initialize formatter with HTMLElement */                
+emplateFormatter(cardInput, {
+    template: "3xxx xxxx xxxx",
+    prefixes: ["4", "5"]
+});
+
+cardInput.addEventListener('tf.p.onchange', function (e) {
+    let enteredCardType = e.detail;
+
+    highlightCardType(enteredCardType);
+});</code></pre>
         </div>
 
         <div class="example-block">
             <h2>Multiple templates</h2>
 
-            <div class="row">
-                <span>Find parcel by &nbsp;</span>
-                <select id="postInputType">
-                    <option value="1">Parcel code</option>
-                    <option value="2">Phone number</option>
-                </select>
+            <div class="example-block__descr">
+                <p>In this example we're using multiple templates. If user selects "Phone number" from dropdown then
+                    template will be changed to <b>+1 xxx xxx xx xx</b>.
+                </p>
+
+                <div class="example-block__descr__parcel">
+                    <div class="row">
+                        <span>Find parcel by &nbsp;</span>
+                        <select id="postInputType">
+                            <option value="1">Parcel code</option>
+                            <option value="2">Phone number</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <input id="postInput" />
+                        <button>Find</button>
+                    </div>
+                </div>
             </div>
-            <br/>
-            <div class="row">
-                <input id="postInput" />
-                <button>Find</button>
-            </div>
+
+            <pre><code class="language-js">const parcelCodeTemplate = "LCxxxxxxCN";
+const phoneNumberTemplate = "+1 xxx xxx xx xx";
+let parcelFormatter = new TemplateFormatter('postInput', {
+    template: parcelCodeTemplate
+})
+parcelFormatter._inputElement.setAttribute('placeholder', parcelCodeTemplate);
+
+document.getElementById("postInputType").addEventListener('change', (e) => {
+    switch (e.target.value) {
+        case "1":
+            parcelFormatter.template = parcelCodeTemplate;
+            parcelFormatter._inputElement.setAttribute('placeholder', parcelCodeTemplate);
+            parcelFormatter._inputElement.value = '';
+            break;
+        case "2":
+            parcelFormatter.template = phoneNumberTemplate;
+            parcelFormatter._inputElement.setAttribute('placeholder', phoneNumberTemplate);
+            parcelFormatter._inputElement.value = '';
+            break;
+    }
+})</code></pre>
         </div>
 
         <script type="text/javascript" src='./example.js'></script>
+        <script type="text/javascript" src="./prism.js"></script>
     </main>
 </body>
 
