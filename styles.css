@@ -1,6 +1,7 @@
-main {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+@import url('https://fonts.googleapis.com/css2?family=Roboto');
+
+body {
+    font-family: 'Roboto';
 }
 
 input, button, textarea {
@@ -77,16 +78,21 @@ input.invalid {
     color: lightgray;
 }
 
-.examples-container {  
-    display: grid;  
-    grid-gap: 5px;  
-    grid-template-columns: repeat(auto-fit, 350px);
-    grid-template-rows: repeat(2, 350px);
-    justify-content: center;
+pre.language-js {
+    width: fit-content;
+    width: 800px;
+}
+.code-toolbar {
+    max-width: fit-content;
+    margin: 0 auto;
 }
 
 .example-block {
     margin: 0 auto;
+}
+.example-block p {
+    text-align: left;
+    font-size: 1.25rem;
 }
 
 .example-block .row {
@@ -99,4 +105,19 @@ input.invalid {
 
 .example-block textarea {
     width: 100%;
+}
+
+.example-block__descr {
+    display: grid;
+    justify-content: center;
+    grid-template-columns: 500px auto;
+    grid-gap: 32px;
+}
+.example-block__descr .row {
+    height: fit-content;
+    margin: auto 0;
+}
+
+.example-block__descr__parcel > div:not(:last-child) {
+    margin-bottom: 12px;
 }

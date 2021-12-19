@@ -20,48 +20,57 @@ function submitPhoneNumber(event, form) {
         alert('Phone number is invalid');
 }
 
+function highlightCardType(cardType) {
+    creditCardList = document.getElementById('creditCardList');
+
+    creditCardList.querySelectorAll('li').forEach(t => {
+        t.classList.remove('clr-valid');
+        if (t.dataset['cardType'] == cardType)
+            t.classList.add('clr-valid');
+    })
+    
+    if (cardType == -1)
+        creditCardList.classList.remove('faded');
+    else
+        creditCardList.classList.add('faded');
+}
+
 function initCardInput() {
     creditCardList = document.getElementById('creditCardList');
 
     let cardInput = document.getElementById('cardInput');
-    let cardFormatter = new TemplateFormatter(cardInput, {
+    /* We can also initialize formatter with HTMLElement */
+    new TemplateFormatter(cardInput, {
         template: "3xxx xxxx xxxx",
         prefixes: ["4", "5"]
     });
 
     cardInput.addEventListener('tf.p.onchange', function (e) {
-        creditCardList.querySelectorAll('li').forEach(t => {
-            t.classList.remove('clr-valid');
-            if (t.dataset['cardType'] == e.detail)
-                t.classList.add('clr-valid');
-        })
-        
-        if (e.detail == -1)
-            creditCardList.classList.remove('faded');
-        else
-            creditCardList.classList.add('faded');
-    })
+        let enteredCardType = e.detail;
+
+        highlightCardType(enteredCardType);
+    });
 }
 
 function initInputWithTwoTemplates() {
     const parcelCodeTemplate = "LCxxxxxxCN";
     const phoneNumberTemplate = "+1 xxx xxx xx xx";
-    let postInput = new TemplateFormatter('postInput', {
+    let parcelFormatter = new TemplateFormatter('postInput', {
         template: parcelCodeTemplate
     })
-    postInput._inputElement.setAttribute('placeholder', parcelCodeTemplate);
+    parcelFormatter._inputElement.setAttribute('placeholder', parcelCodeTemplate);
 
     document.getElementById("postInputType").addEventListener('change', (e) => {
         switch (e.target.value) {
             case "1":
-                postInput.template = parcelCodeTemplate;
-                postInput._inputElement.setAttribute('placeholder', parcelCodeTemplate);
-                postInput._inputElement.value = '';
+                parcelFormatter.template = parcelCodeTemplate;
+                parcelFormatter._inputElement.setAttribute('placeholder', parcelCodeTemplate);
+                parcelFormatter._inputElement.value = '';
                 break;
             case "2":
-                postInput.template = phoneNumberTemplate;
-                postInput._inputElement.setAttribute('placeholder', phoneNumberTemplate);
-                postInput._inputElement.value = '';
+                parcelFormatter.template = phoneNumberTemplate;
+                parcelFormatter._inputElement.setAttribute('placeholder', phoneNumberTemplate);
+                parcelFormatter._inputElement.value = '';
                 break;
         }
     })
