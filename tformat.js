@@ -168,10 +168,11 @@ class TemplateFormatter {
 
         this._prefixIndex = this.getSuitablePrefixIndex(newEnteredText);
 
-        this._inputElement.dispatchEvent(new CustomEvent('tf.p.onchange', {
-            bubbles: true,
-            detail: this._prefixIndex
-        }));
+        if (this._inputElement)
+            this._inputElement.dispatchEvent(new CustomEvent('tf.p.onchange', {
+                bubbles: true,
+                detail: this._prefixIndex
+            }));
     }
 
     /**
@@ -264,10 +265,10 @@ class TemplateFormatter {
     }
 
     /**
-     * Format text and update class state
+     * 
      * @param {string} newInputText 
      * @param {boolean} wasCharDeleted 
-     * @returns {string} processed text
+     * @returns {string}
      */
     _processNewInput(newInputText, wasCharDeleted) {
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
@@ -277,11 +278,19 @@ class TemplateFormatter {
         return this.formatText(newInputText);
     }
 
-    onKeyUp(event) {
-        this._inputElement.value = this._processNewInput(
+    /**
+     * Format text and update class state
+     * @param {InputEvent} event onKeyUp event
+     * @returns {string} processed text
+     */
+    _processNewInputEvent(event) {
+        return this._processNewInput(
             event.target.value,
-            event.keyCode === 8 || event.keyCode === 46
-        );
+            event.keyCode === 8 || event.keyCode === 46);
+    }
+
+    onKeyUp(event) {
+        this._inputElement.value = this._processNewInputEvent(event);
 
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
@@ -289,7 +298,10 @@ class TemplateFormatter {
 
     onFocus(event) {
         if (this.showPrefixOnFocus)
-            this._inputElement.dispatchEvent(new Event('keyup'));
+            this._processNewInput(
+                this._prefixes[0] || '',
+                false
+            );
     }
 
     onBlur(event) {
