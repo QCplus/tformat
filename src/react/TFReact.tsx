@@ -1,20 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import TemplateFormatter from '../tformat';
 
-export type TFinputState = {
+export type TFReactState = {
     formatter: TemplateFormatter
 }
 
-export type TFinputProps = {
+export type TFReactProps = {
     template: string,
     prefixes?: string[],
     showPrefixOnFocus?: boolean,
     onFormatted: (val: string, rawVal: string) => void
 } & React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 
-export class TFinput extends React.Component<TFinputProps, TFinputState> {
-    constructor(props: TFinputProps) {
+export class TFReact extends React.Component<TFReactProps, TFReactState> {
+    constructor(props: TFReactProps) {
         super(props);
 
         this.state = {
@@ -58,7 +58,7 @@ export class TFinput extends React.Component<TFinputProps, TFinputState> {
         if (this.state.formatter.currentPrefix === this.props.value)
             this.updateValue('');
 
-        this.props.onBlur && this.props.onBlur(e);
+            this.props.onBlur && this.props.onBlur(e);
     }
 
     render(): React.ReactNode {
@@ -84,4 +84,4 @@ export class TFinput extends React.Component<TFinputProps, TFinputState> {
     }    
 }
 
-export default TFinput;
+export default TFReact;

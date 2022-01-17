@@ -1,4 +1,5 @@
-import TFinput, { TFinputProps, TFinputState } from "./react/TFinput";
+import TFReact from "./react/TFReact";
 import TemplateFormatter from "./tformat";
 
-export { TFinput, TFinputProps, TFinputState, TemplateFormatter }
+export { TemplateFormatter };
+export default TFReact;
