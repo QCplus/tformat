@@ -99,7 +99,7 @@ class TemplateFormatter {
         this._prefixes = [];
 
         if (props.template)
-            this.template = props.template;
+            this.template = props.template
         else
             throw 'Template must be specified';
 
