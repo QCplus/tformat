@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import TemplateFormatter from '../tformat';
 
@@ -8,12 +8,12 @@ export type TFinputState = {
 
 export type TFinputProps = {
     template: string,
-    prefixes: string[],
-    showPrefixOnFocus: boolean,
+    prefixes?: string[],
+    showPrefixOnFocus?: boolean,
     onFormatted: (val: string, rawVal: string) => void
 } & React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 
-export class TFinput extends Component<TFinputProps, TFinputState> {
+export class TFinput extends React.Component<TFinputProps, TFinputState> {
     constructor(props: TFinputProps) {
         super(props);
 
@@ -61,29 +61,27 @@ export class TFinput extends Component<TFinputProps, TFinputState> {
         this.props.onBlur && this.props.onBlur(e);
     }
 
-    render() {
-        return (
-            <input
-                className={this.props.className}
-                type={this.props.type}
-                value={this.props.value}
-                placeholder={this.props.placeholder}
-                defaultValue={this.props.defaultValue}
-                style={this.props.style}
-                onCopy={this.props.onCopy}
-                onCut={this.props.onCut}
-                onPaste={this.props.onPaste}
-                onBlur={this.onBlur.bind(this)}
-                onFocus={this.onFocus.bind(this)}
-                onSelect={this.props.onSelect}
-                onSubmit={this.props.onSubmit}
-                onReset={this.props.onReset}
-                onKeyDown={this.props.onKeyDown}
-                onKeyPress={this.props.onKeyPress}
-                onKeyUp={this.props.onKeyUp}
-                onChange={this.onChange.bind(this)} />
-        );
-    }
+    render(): React.ReactNode {
+        return <input
+            className={this.props.className}
+            type={this.props.type}
+            value={this.props.value}
+            placeholder={this.props.placeholder}
+            defaultValue={this.props.defaultValue}
+            style={this.props.style}
+            onCopy={this.props.onCopy}
+            onCut={this.props.onCut}
+            onPaste={this.props.onPaste}
+            onBlur={this.onBlur.bind(this)}
+            onFocus={this.onFocus.bind(this)}
+            onSelect={this.props.onSelect}
+            onSubmit={this.props.onSubmit}
+            onReset={this.props.onReset}
+            onKeyDown={this.props.onKeyDown}
+            onKeyPress={this.props.onKeyPress}
+            onKeyUp={this.props.onKeyUp}
+            onChange={this.onChange.bind(this)} />
+    }    
 }
 
 export default TFinput;

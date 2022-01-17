@@ -1,4 +1,21 @@
-class TemplateFormatter {
+export type TemplateFormatterProps = {
+    template: string;
+    prefixes?: string[];
+    showPrefixOnFocus?: boolean;
+    createHiddenInput?: boolean;
+    templateForHidden?: string;
+}
+
+export default class TemplateFormatter {
+    _inputElement: HTMLInputElement | null | undefined;
+    _clonedInput: HTMLInputElement | undefined;
+    _template = "";
+    _prefixes = new Array<string>();
+    _templateForHiddenInput = "";
+    _prefixIndex = 0;
+
+    showPrefixOnFocus = false;
+
     get templateChar() {
         return 'x';
     }
@@ -10,14 +27,14 @@ class TemplateFormatter {
     /**
      * @returns {string}
      */
-    get template() {
+    get template(): string {
         return this._template;
     }
 
     /**
      * @param {string} newValue
      */
-    set template(newValue) {
+    set template(newValue: string) {
         if (typeof (newValue) != 'string')
             throw 'Template must be a string';
 
@@ -30,7 +47,7 @@ class TemplateFormatter {
     /**
      * @returns {string}
      */
-    get currentPrefix() {
+    get currentPrefix(): string {
         if (this._prefixIndex == -1)
             return '';
 
@@ -40,9 +57,9 @@ class TemplateFormatter {
     /**
      * @param {string[]} newValue
      */
-    set prefixes(newValue) {
-        if (!Array.isArray(newValue) && newValue.length == 0)
-            throw "prefixes must be a non empty Array!";
+    set prefixes(newValue: string[] | undefined) {
+        if (!Array.isArray(newValue) || newValue.length == 0)
+            throw "Prefixes must be a non empty Array!";
         if (!newValue.every(t => typeof (t) == "string"))
             throw "Possible prefix must be a string!";
 
@@ -50,18 +67,21 @@ class TemplateFormatter {
     }
 
     _initEvents() {
-        this._inputElement.addEventListener('keyup', this.onKeyUp.bind(this));
-        this._inputElement.addEventListener('focus', this.onFocus.bind(this));
-        this._inputElement.addEventListener('blur', this.onBlur.bind(this));
+        this._inputElement?.addEventListener('keyup', this.onKeyUp.bind(this));
+        this._inputElement?.addEventListener('focus', this.onFocus.bind(this));
+        this._inputElement?.addEventListener('blur', this.onBlur.bind(this));
     }
 
     /**
      * 
      * @param {string} templateForHidden 
      */
-    _initHiddenInput(templateForHidden) {
-        this._clonedInput = this._inputElement.cloneNode(true);
-        this._inputElement.parentElement.insertBefore(this._clonedInput, this._inputElement);
+    _initHiddenInput(templateForHidden: string) {
+        if (!this._inputElement || !this._clonedInput)
+            return;
+
+        this._clonedInput = this._inputElement.cloneNode(true) as HTMLInputElement;
+        this._inputElement.after(this._clonedInput);
 
         this._inputElement.setAttribute("name", '');
         this._clonedInput.style.display = "none";
@@ -74,10 +94,10 @@ class TemplateFormatter {
      * @param {string | HTMLInputElement | null} inputElement 
      * @param {object} props 
      */
-    constructor(inputElement, props) {
+    constructor(inputElement: string | HTMLInputElement | null, props: TemplateFormatterProps) {
         if (inputElement) {
             if (typeof (inputElement) == "string") {
-                this._inputElement = document.getElementById(inputElement);
+                this._inputElement = document.getElementById(inputElement) as HTMLInputElement;
                 if (!this._inputElement)
                     throw "There is no element with id: " + inputElement;
             } 
@@ -86,17 +106,16 @@ class TemplateFormatter {
             else
                 throw "Unknown input element type";
 
-            if (props.showPrefixOnFocus)
-                this.showPrefixOnFocus = true;
+            this.showPrefixOnFocus = props.showPrefixOnFocus ? true : false;
 
             if (props.createHiddenInput)
-                this._initHiddenInput(props.templateForHidden);
+                this._initHiddenInput(props.templateForHidden || '');
 
             this._initEvents();
         }
 
-        this._prefixIndex = 0;
-        this._prefixes = [];
+        // this._prefixIndex = 0;
+        // this._prefixes = [];
 
         if (props.template)
             this.template = props.template
@@ -112,7 +131,7 @@ class TemplateFormatter {
      * @param {number[]} arr Array of non negative numbers
      * @returns object this properties: max unique value and its index from array or -1 if there is no
      */
-    getUniqueMaxVal(arr) {
+    getUniqueMaxVal(arr: number[]) {
         let maxVal = -1;
         let maxIndx = -1;
         let isValUnique = true;
@@ -134,11 +153,11 @@ class TemplateFormatter {
 
     /**
      * @param {string} textToMatch
-     * @returns array where element i is amount of characters that textToMatch and i-th prefix contain (count should end on first different char)
+     * @returns {number[]} array where element i is amount of characters that textToMatch and i-th prefix contain (count should end on first different char)
      */
-    calcPrefixMatchCount(textToMatch) {
+    calcPrefixMatchCount(textToMatch: string): number[] {
         let clearedText = textToMatch.replace(this.nonTemplateValueRegExp, '');
-        let matchCount = [];
+        let matchCount = new Array<number>();
         this._prefixes.map(t => t.replace(this.nonTemplateValueRegExp, '')).forEach(v => {
             let matches = 0;
             for (let i = 0; i < Math.min(v.length, clearedText.length); i++) {
@@ -156,7 +175,7 @@ class TemplateFormatter {
      * @param {string} text 
      * @returns {number} prefix index thats suits text
      */
-    getSuitablePrefixIndex(text) {
+    getSuitablePrefixIndex(text: string): number {
         if (!text || !text.trim())
             return -1;
 
@@ -169,7 +188,7 @@ class TemplateFormatter {
     /**
      * @param {string} newEnteredText 
      */
-    _updatePossiblePrefix(newEnteredText) {
+    _updatePossiblePrefix(newEnteredText: string) {
         if (this._prefixes.length == 1 && !this._prefixes[0])
             return;
 
@@ -187,7 +206,7 @@ class TemplateFormatter {
      * @param {string} text 
      * @returns {string}
      */
-    pushPostfixIfNeeded(text) {
+    pushPostfixIfNeeded(text: string): string {
         let startOfPostfix = this.template.lastIndexOf(this.templateChar);
 
         if (this.currentPrefix.length + startOfPostfix + 1 == text.length)
@@ -200,7 +219,7 @@ class TemplateFormatter {
      * @param {string} textWithPrefix Text with only acceptable chars
      * @returns {string} Text without prefix
      */
-    removePrefix(textWithPrefix) {
+    removePrefix(textWithPrefix: string): string {
         let currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
 
         let prefixEnd = 0;
@@ -216,7 +235,7 @@ class TemplateFormatter {
      * @param {string} textToFormat 
      * @returns {string} Formatted text
      */
-    formatText(textToFormat) {
+    formatText(textToFormat: string): string {
         let textWithTemplateVals = this.removePrefix(textToFormat.replace(this.nonTemplateValueRegExp, ''));
 
         let formattedText = "";
@@ -233,7 +252,7 @@ class TemplateFormatter {
      * @param {string} text 
      * @returns {number} index of the first character that differ from template. If text and template are equal than -1
      */
-    _getFirstTemplateMismatch(text) {
+    _getFirstTemplateMismatch(text: string): number {
         let prefixIndx = this.getSuitablePrefixIndex(text);
         let fullTemplate = this._prefixes[prefixIndx] + this.template;
 
@@ -252,7 +271,7 @@ class TemplateFormatter {
      * @param {string} text 
      * @returns {boolean}
      */
-    isPartiallyMatchTemplate(text) {
+    isPartiallyMatchTemplate(text: string): boolean {
         if (text) {
             let firstMismatch = this._getFirstTemplateMismatch(text);
 
@@ -266,15 +285,15 @@ class TemplateFormatter {
      * @param {string} text 
      * @returns {boolean}
      */
-    isMatchTemplate(text) {
-        return text && this._getFirstTemplateMismatch(text) == -1;
+    isMatchTemplate(text: string | undefined): boolean {
+        return text ? this._getFirstTemplateMismatch(text) == -1 : false;
     }
 
     /**
      * 
      * @returns {boolean}
      */
-    isInputValueValid() {
+    isInputValueValid(): boolean {
         if (this._inputElement)
             return this.isMatchTemplate(this._inputElement.value);
         throw "There is no input element";
@@ -286,7 +305,7 @@ class TemplateFormatter {
      * @param {boolean} wasCharDeleted 
      * @returns {string}
      */
-    _processNewInput(newInputText, wasCharDeleted) {
+    _processNewInput(newInputText: string, wasCharDeleted: boolean): string {
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
         this._updatePossiblePrefix(newInputText);
@@ -299,9 +318,9 @@ class TemplateFormatter {
      * @param {KeyboardEvent} event onKeyUp event
      * @returns {string} processed text
      */
-    _processNewInputEvent(event) {
+    _processNewInputEvent(event: KeyboardEvent): string {
         return this._processNewInput(
-            event.target.value,
+        (<HTMLInputElement>event.target).value,
             event.keyCode === 8 || event.keyCode === 46);
     }
 
@@ -310,7 +329,7 @@ class TemplateFormatter {
      * @param {string} formattedText 
      * @returns {string}
      */
-         getRawValue(formattedText) {
+         getRawValue(formattedText: string): string {
             if (!formattedText)
                 return '';
     
@@ -321,7 +340,10 @@ class TemplateFormatter {
      * 
      * @param {KeyboardEvent} event 
      */
-    onKeyUp(event) {
+    onKeyUp(event: KeyboardEvent) {
+        if (!this._inputElement)
+            return;
+
         this._inputElement.value = this._processNewInputEvent(event);
 
         if (this._clonedInput)
@@ -332,7 +354,7 @@ class TemplateFormatter {
      * 
      * @param {FocusEvent} event 
      */
-    onFocus(event) {
+    onFocus(event: FocusEvent) {
         if (this.showPrefixOnFocus)
             this._processNewInput(
                 this._prefixes[0] || '',
@@ -344,10 +366,8 @@ class TemplateFormatter {
      * 
      * @param {FocusEvent} event 
      */
-    onBlur(event) {
-        if (this.currentPrefix == this._inputElement.value)
+    onBlur(event: FocusEvent) {
+        if (this.currentPrefix == this._inputElement?.value)
             this._inputElement.value = '';
     }
 }
-
-module.exports = TemplateFormatter;

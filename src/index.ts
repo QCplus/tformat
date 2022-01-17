@@ -1,3 +1,4 @@
-import TFinput from "./react/TFinput";
+import TFinput, { TFinputProps, TFinputState } from "./react/TFinput";
+import TemplateFormatter from "./tformat";
 
-export { TFinput }
+export { TFinput, TFinputProps, TFinputState, TemplateFormatter }
