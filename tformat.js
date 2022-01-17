@@ -21,8 +21,7 @@ var TemplateFormatter = /** @class */ (function () {
                 this._inputElement = inputElement;
             else
                 throw "Unknown input element type";
-            if (props.showPrefixOnFocus)
-                this.showPrefixOnFocus = true;
+            this.showPrefixOnFocus = props.showPrefixOnFocus ? true : false;
             if (props.createHiddenInput)
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
