@@ -11,6 +11,10 @@ var TemplateFormatter = /** @class */ (function () {
         this._templateForHiddenInput = "";
         this._prefixIndex = 0;
         this.showPrefixOnFocus = false;
+        if (props.template)
+            this.template = props.template;
+        else
+            throw 'Template must be specified';
         if (inputElement) {
             if (typeof (inputElement) == "string") {
                 this._inputElement = document.getElementById(inputElement);
@@ -21,16 +25,16 @@ var TemplateFormatter = /** @class */ (function () {
                 this._inputElement = inputElement;
             else
                 throw "Unknown input element type";
-            if (props.showPrefixOnFocus)
-                this.showPrefixOnFocus = true;
+            if (props.showPrefixOnFocus) {
+                if (props.prefixes && this._prefixes.length + props.prefixes.length > 1)
+                    console.warn("You've set showPrefixOnFocus, but there is more than one prefix");
+                else
+                    this.showPrefixOnFocus = true;
+            }
             if (props.createHiddenInput)
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
         }
-        if (props.template)
-            this.template = props.template;
-        else
-            throw 'Template must be specified';
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
     }
