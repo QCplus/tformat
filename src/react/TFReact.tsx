@@ -25,6 +25,11 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
                 createHiddenInput: false
             })
         }
+
+        if (this.props.value)
+            this.updateValue(
+                this.state.formatter._processNewInput(this.props.value as string, false)
+            );
     }
 
     updateValue(formattedValue: string) {
@@ -35,8 +40,6 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
     }
 
     onChange(e: React.ChangeEvent<HTMLInputElement>) {
-        console.log("Changed to " + e.target.value);
-        
         this.updateValue(
             this.state.formatter._processNewInput(e.target.value, false)
         );
@@ -58,11 +61,12 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
         if (this.state.formatter.currentPrefix === this.props.value)
             this.updateValue('');
 
-            this.props.onBlur && this.props.onBlur(e);
+        this.props.onBlur && this.props.onBlur(e);
     }
 
     render(): React.ReactNode {
         return <input
+            id={this.props.id}
             className={this.props.className}
             type={this.props.type}
             value={this.props.value}
