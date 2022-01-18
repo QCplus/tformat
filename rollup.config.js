@@ -53,6 +53,7 @@ export default [{
             format: "cjs",
             plugins: [terser({
                 keep_classnames: true,
+                mangle: false,
                 compress: {
                     unused: false
                 }

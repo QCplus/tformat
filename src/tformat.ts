@@ -77,7 +77,7 @@ export default class TemplateFormatter {
      * @param {string} templateForHidden 
      */
     _initHiddenInput(templateForHidden: string) {
-        if (!this._inputElement || !this._clonedInput)
+        if (!this._inputElement)
             return;
 
         this._clonedInput = this._inputElement.cloneNode(true) as HTMLInputElement;
@@ -106,16 +106,14 @@ export default class TemplateFormatter {
             else
                 throw "Unknown input element type";
 
-            this.showPrefixOnFocus = props.showPrefixOnFocus ? true : false;
+            if (props.showPrefixOnFocus)
+                this.showPrefixOnFocus = true;
 
             if (props.createHiddenInput)
                 this._initHiddenInput(props.templateForHidden || '');
 
             this._initEvents();
         }
-
-        // this._prefixIndex = 0;
-        // this._prefixes = [];
 
         if (props.template)
             this.template = props.template
@@ -131,7 +129,7 @@ export default class TemplateFormatter {
      * @param {number[]} arr Array of non negative numbers
      * @returns object this properties: max unique value and its index from array or -1 if there is no
      */
-    getUniqueMaxVal(arr: number[]) {
+    getUniqueMaxVal(arr: number[]): { value: number, index: number } {
         let maxVal = -1;
         let maxIndx = -1;
         let isValUnique = true;
@@ -306,6 +304,8 @@ export default class TemplateFormatter {
      * @returns {string}
      */
     _processNewInput(newInputText: string, wasCharDeleted: boolean): string {
+        console.log(`Processing: ${newInputText}`);
+        
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
         this._updatePossiblePrefix(newInputText);
@@ -350,16 +350,9 @@ export default class TemplateFormatter {
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     }
 
-    /**
-     * 
-     * @param {FocusEvent} event 
-     */
     onFocus(event: FocusEvent) {
-        if (this.showPrefixOnFocus)
-            this._processNewInput(
-                this._prefixes[0] || '',
-                false
-            );
+        if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')
+            this._inputElement.value = this._processNewInput(this._prefixes[0] || '', false);
     }
 
     /**

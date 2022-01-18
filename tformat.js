@@ -21,13 +21,12 @@ var TemplateFormatter = /** @class */ (function () {
                 this._inputElement = inputElement;
             else
                 throw "Unknown input element type";
-            this.showPrefixOnFocus = props.showPrefixOnFocus ? true : false;
+            if (props.showPrefixOnFocus)
+                this.showPrefixOnFocus = true;
             if (props.createHiddenInput)
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
         }
-        // this._prefixIndex = 0;
-        // this._prefixes = [];
         if (props.template)
             this.template = props.template;
         else
@@ -106,7 +105,7 @@ var TemplateFormatter = /** @class */ (function () {
      * @param {string} templateForHidden
      */
     TemplateFormatter.prototype._initHiddenInput = function (templateForHidden) {
-        if (!this._inputElement || !this._clonedInput)
+        if (!this._inputElement)
             return;
         this._clonedInput = this._inputElement.cloneNode(true);
         this._inputElement.after(this._clonedInput);
@@ -269,6 +268,7 @@ var TemplateFormatter = /** @class */ (function () {
      * @returns {string}
      */
     TemplateFormatter.prototype._processNewInput = function (newInputText, wasCharDeleted) {
+        console.log("Processing: ".concat(newInputText));
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
         this._updatePossiblePrefix(newInputText);
@@ -303,13 +303,9 @@ var TemplateFormatter = /** @class */ (function () {
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     };
-    /**
-     *
-     * @param {FocusEvent} event
-     */
     TemplateFormatter.prototype.onFocus = function (event) {
-        if (this.showPrefixOnFocus)
-            this._processNewInput(this._prefixes[0] || '', false);
+        if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')
+            this._inputElement.value = this._processNewInput(this._prefixes[0] || '', false);
     };
     /**
      *

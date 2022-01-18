@@ -387,6 +387,12 @@ describe("General", function() {
 
         valueInput.blur();
         assert.equal(valueInput.value, "");
+
+        valueInput.value = "1 234";
+        simulateKeyUp();
+
+        valueInput.focus();
+        assert.equal(valueInput.value, "1 234");
     })
 
     it("Test postfix", function() {

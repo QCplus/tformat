@@ -4,7 +4,6 @@ function initPhoneInput() {
     let phoneFormatter = new TemplateFormatter('phoneInput', {
         template: '+1 (xxx) xxx xx xx',
         createHiddenInput: true,
-        /*showPrefixOnFocus: true,*/
         prefixes: ["+4 ("]
     });
 
