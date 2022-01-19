@@ -272,7 +272,6 @@ var TemplateFormatter = /** @class */ (function () {
      * @returns {string}
      */
     TemplateFormatter.prototype._processNewInput = function (newInputText, wasCharDeleted) {
-        console.log("Processing: ".concat(newInputText));
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
         this._updatePossiblePrefix(newInputText);

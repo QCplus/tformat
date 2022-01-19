@@ -308,8 +308,6 @@ export default class TemplateFormatter {
      * @returns {string}
      */
     _processNewInput(newInputText: string, wasCharDeleted: boolean): string {
-        console.log(`Processing: ${newInputText}`);
-        
         if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
             return newInputText;
         this._updatePossiblePrefix(newInputText);

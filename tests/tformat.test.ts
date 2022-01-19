@@ -7,8 +7,6 @@ function setupInputField() {
     valueInput = document.createElement('input');
     valueInput.setAttribute('id', INPUT_ID);
     valueInput.setAttribute('name', INPUT_ID);
-
-    // document.getElementsByTagName('main')[0].prepend(valueInput);
 }
 
 function clearInputField() {
