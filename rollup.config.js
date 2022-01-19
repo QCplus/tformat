@@ -2,6 +2,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import dts from "rollup-plugin-dts";
 import resolve from "@rollup/plugin-node-resolve";
+import replace from '@rollup/plugin-replace';
 import {
     terser
 } from "rollup-plugin-terser";
@@ -30,7 +31,7 @@ export default [{
         ]
     },
     {
-        /* Making one file with types */
+        /* Make one file with types */
         input: "dist/esm/types/index.d.ts",
         output: [{
             file: "dist/types.d.ts",
@@ -41,23 +42,21 @@ export default [{
     {
         input: "src/tformat.ts",
         output: [{
-            file: "tformat.js",
-            format: "cjs",
-        }],
+                file: "tformat.js",
+                format: "cjs",
+            },
+            {
+                file: "tformat.min.js",
+                format: "cjs",
+                plugins: [terser({
+                    keep_classnames: true,
+                    mangle: false,
+                    compress: {
+                        unused: false,
+                    },
+                })]
+            }
+        ],
         plugins: [typescript()]
     },
-    {
-        input: "tformat.js",
-        output: [{
-            file: "tformat.min.js",
-            format: "cjs",
-            plugins: [terser({
-                keep_classnames: true,
-                mangle: false,
-                compress: {
-                    unused: false
-                }
-            })]
-        }]
-    }
 ];
