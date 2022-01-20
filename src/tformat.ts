@@ -122,6 +122,12 @@ export default class TemplateFormatter {
                 this._initHiddenInput(props.templateForHidden || '');
 
             this._initEvents();
+
+            if (this._inputElement.value)
+                this._updateValueInInput(this._processNewInput(
+                    this._inputElement.value,
+                    false
+                ));
         }
 
         if (props.prefixes)
@@ -331,25 +337,25 @@ export default class TemplateFormatter {
      * @param {string} formattedText 
      * @returns {string}
      */
-         getRawValue(formattedText: string): string {
-            if (!formattedText)
-                return '';
-    
-            return formattedText.replace(this.nonTemplateValueRegExp, '');
-        }
+    getRawValue(formattedText: string): string {
+        if (!formattedText)
+            return '';
 
-    /**
-     * 
-     * @param {KeyboardEvent} event 
-     */
-    onKeyUp(event: KeyboardEvent) {
+        return formattedText.replace(this.nonTemplateValueRegExp, '');
+    }
+
+    _updateValueInInput(newValue: string) {
         if (!this._inputElement)
             return;
 
-        this._inputElement.value = this._processNewInputEvent(event);
+        this._inputElement.value = newValue;
 
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
+    }
+
+    onKeyUp(event: KeyboardEvent) {
+        this._updateValueInInput(this._processNewInputEvent(event));
     }
 
     onFocus(event: FocusEvent) {

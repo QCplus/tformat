@@ -375,6 +375,17 @@ describe("General", function() {
         expect(getElementById.mock.calls[0][0]).toBe(INPUT_ID);
     })
 
+    test("Init with non empty input value", () => {
+        valueInput.value = "234";
+
+        let tformat = new TemplateFormatter(valueInput, {
+            template: "1 xxx",
+            showPrefixOnFocus: true
+        });
+
+        expect(valueInput.value).toBe("1 234");
+    })
+
     test("Test focus and blur", function() {
         let tformat = new TemplateFormatter(valueInput, {
             template: "1 xxx",
