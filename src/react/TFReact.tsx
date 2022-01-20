@@ -71,7 +71,6 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
             type={this.props.type}
             value={this.props.value}
             placeholder={this.props.placeholder}
-            defaultValue={this.props.defaultValue}
             style={this.props.style}
             onCopy={this.props.onCopy}
             onCut={this.props.onCut}
