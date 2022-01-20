@@ -34,6 +34,8 @@ var TemplateFormatter = /** @class */ (function () {
             if (props.createHiddenInput)
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
+            if (this._inputElement.value)
+                this._updateValueInInput(this._processNewInput(this._inputElement.value, false));
         }
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
@@ -295,16 +297,15 @@ var TemplateFormatter = /** @class */ (function () {
             return '';
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     };
-    /**
-     *
-     * @param {KeyboardEvent} event
-     */
-    TemplateFormatter.prototype.onKeyUp = function (event) {
+    TemplateFormatter.prototype._updateValueInInput = function (newValue) {
         if (!this._inputElement)
             return;
-        this._inputElement.value = this._processNewInputEvent(event);
+        this._inputElement.value = newValue;
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
+    };
+    TemplateFormatter.prototype.onKeyUp = function (event) {
+        this._updateValueInInput(this._processNewInputEvent(event));
     };
     TemplateFormatter.prototype.onFocus = function (event) {
         if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')
