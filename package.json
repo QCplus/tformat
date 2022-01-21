@@ -17,9 +17,6 @@
   "jest": {
     "testEnvironment": "jsdom"
   },
-  "publishConfig": {
-      "registry": "https://npm.pkg.github.com/qcplus"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/QCplus/tformat.git"
@@ -30,7 +27,8 @@
     "input",
     "format",
     "formatter",
-    "vanilla"
+    "vanilla",
+    "react"
   ],
   "author": "qcplus",
   "license": "ISC",
