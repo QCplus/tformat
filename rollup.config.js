@@ -44,17 +44,26 @@ export default [{
         output: [{
                 file: "tformat.js",
                 format: "cjs",
+                plugins: [replace({
+                    delimiters: ['', ''],
+                    'module.exports = TemplateFormatter;': '',
+                })]
             },
             {
                 file: "tformat.min.js",
                 format: "cjs",
                 plugins: [terser({
-                    keep_classnames: true,
-                    mangle: false,
-                    compress: {
-                        unused: false,
-                    },
-                })]
+                        keep_classnames: true,
+                        mangle: false,
+                        compress: {
+                            unused: false,
+                        },
+                    }),
+                    replace({
+                        delimiters: ['', ''],
+                        'module.exports=TemplateFormatter;': ''
+                    })
+                ]
             }
         ],
         plugins: [typescript()]

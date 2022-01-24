@@ -323,4 +323,3 @@ var TemplateFormatter = /** @class */ (function () {
     return TemplateFormatter;
 }());
 
-module.exports = TemplateFormatter;
