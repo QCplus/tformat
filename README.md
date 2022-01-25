@@ -90,6 +90,7 @@ Additional options goes in second parameter as one object. Possible object prope
 | prefixes         | string[] | No           |         | Possible template prefixes. If user enters first character from `prefixes` then this prefix will be used in input, otherwise template prefix will be used |
 | showPrefixOnFocus| boolean  | No           | false   | If `true` then template prefix will be shown after user clicks on input |
 | createHiddenInput| boolean  | No           | false   | If `true` then hidden clone of input will be created, that contains only numbers. It can be used in form submitting |
+| hidePrefixOnBlur | boolean  | No           | true    | If value input equals template prefix then value will be cleared |
 
 ## Properties
 

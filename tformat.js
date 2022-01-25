@@ -11,6 +11,7 @@ var TemplateFormatter = /** @class */ (function () {
         this._templateForHiddenInput = "";
         this._prefixIndex = 0;
         this.showPrefixOnFocus = false;
+        this.hidePrefixOnBlur = true;
         if (props.template)
             this.template = props.template;
         else
@@ -39,6 +40,8 @@ var TemplateFormatter = /** @class */ (function () {
         }
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
+        if (props.hidePrefixOnBlur)
+            this.hidePrefixOnBlur = true;
     }
     Object.defineProperty(TemplateFormatter.prototype, "templateChar", {
         get: function () {
@@ -317,7 +320,7 @@ var TemplateFormatter = /** @class */ (function () {
      */
     TemplateFormatter.prototype.onBlur = function (event) {
         var _a;
-        if (this.currentPrefix == ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value))
+        if (this.hidePrefixOnBlur && this.currentPrefix == ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value))
             this._inputElement.value = '';
     };
     return TemplateFormatter;

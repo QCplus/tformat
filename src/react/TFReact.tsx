@@ -10,6 +10,7 @@ export type TFReactProps = {
     template: string,
     prefixes?: string[],
     showPrefixOnFocus?: boolean,
+    hidePrefixOnBlur?: boolean,
     onFormatted: (val: string, rawVal: string) => void
 } & React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 
@@ -22,7 +23,8 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
                 template: props.template,
                 prefixes: props.prefixes,
                 showPrefixOnFocus: props.showPrefixOnFocus,
-                createHiddenInput: false
+                createHiddenInput: false,
+                hidePrefixOnBlur: props.hidePrefixOnBlur
             })
         }
 
@@ -58,7 +60,7 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
     }
 
     onBlur(e: React.FocusEvent<HTMLInputElement>) {
-        if (this.state.formatter.currentPrefix === this.props.value)
+        if (this.props.hidePrefixOnBlur && this.state.formatter.currentPrefix === this.props.value)
             this.updateValue('');
 
         this.props.onBlur && this.props.onBlur(e);

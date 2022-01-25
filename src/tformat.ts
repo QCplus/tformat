@@ -4,6 +4,7 @@ export type TemplateFormatterProps = {
     showPrefixOnFocus?: boolean;
     createHiddenInput?: boolean;
     templateForHidden?: string;
+    hidePrefixOnBlur?: boolean;
 }
 
 export default class TemplateFormatter {
@@ -15,6 +16,7 @@ export default class TemplateFormatter {
     _prefixIndex = 0;
 
     showPrefixOnFocus = false;
+    hidePrefixOnBlur = true;
 
     get templateChar() {
         return 'x';
@@ -132,6 +134,9 @@ export default class TemplateFormatter {
 
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
+
+        if (props.hidePrefixOnBlur !== undefined)
+            this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
     }
 
     /**
@@ -368,7 +373,7 @@ export default class TemplateFormatter {
      * @param {FocusEvent} event 
      */
     onBlur(event: FocusEvent) {
-        if (this.currentPrefix == this._inputElement?.value)
+        if (this.hidePrefixOnBlur && this.currentPrefix == this._inputElement?.value)
             this._inputElement.value = '';
     }
 }

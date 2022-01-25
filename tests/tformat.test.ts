@@ -386,25 +386,6 @@ describe("General", function() {
         expect(valueInput.value).toBe("1 234");
     })
 
-    test("Test focus and blur", function() {
-        let tformat = new TemplateFormatter(valueInput, {
-            template: "1 xxx",
-            showPrefixOnFocus: true
-        });
-
-        valueInput.dispatchEvent(new FocusEvent('focus'));
-        expect(valueInput.value).toBe("1 ");
-
-        valueInput.dispatchEvent(new FocusEvent('blur'));
-        expect(valueInput.value).toBe("");
-
-        valueInput.value = "1 234";
-        simulateKeyUp();
-
-        valueInput.focus();
-        expect(valueInput.value).toBe("1 234");
-    })
-
     test("Test postfix", function() {
         new TemplateFormatter(valueInput, {
             template: "+1 (xx)"
@@ -459,5 +440,51 @@ describe("Phone", function() {
         simulateKeyUp();
 
         expect(valueInput.value).toBe('1 (999) 888 77 66');
+    })
+})
+
+describe("Focus and blur", () => {
+    beforeEach(() => {
+        setupInputField();
+    })
+
+    afterEach(() => {
+        clearInputField();
+    })
+
+    test("Show prefix on focus", () => {
+        new TemplateFormatter(valueInput, {
+            template: "+1 xxx xxx",
+            showPrefixOnFocus: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        expect(valueInput.value).toBe("+1 ");
+    })
+
+    test("Hide prefix on blur", () => {
+        new TemplateFormatter(valueInput, {
+            template: '+1 xxx xxx',
+            hidePrefixOnBlur: true,
+            showPrefixOnFocus: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        valueInput.dispatchEvent(new FocusEvent('blur'));
+
+        expect(valueInput.value).toBe('');
+    })
+
+    test("Don't hide prefix on blur", () => {
+        new TemplateFormatter(valueInput, {
+            template: '+1 xxx xxx',
+            hidePrefixOnBlur: false,
+            showPrefixOnFocus: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        valueInput.dispatchEvent(new FocusEvent('blur'));
+
+        expect(valueInput.value).toBe('+1 ');
     })
 })

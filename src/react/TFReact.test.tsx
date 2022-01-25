@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TFReact from './TFReact';
+import { wait } from '@testing-library/user-event/dist/utils';
 
 describe("TFReact", () => {
     test("Render the input", () => {
@@ -39,12 +40,26 @@ describe("TFReact", () => {
         expect(inputValue).toBe("+1 ");
     })
 
-    test("Deselect the input", () => {
+    test("Don't hide prefix on blur", async () => {
         let inputValue = "+1 ";
         render(<TFReact value={inputValue} placeholder='Enter number'
-            template='+1 xxx' onFormatted={(val, rawVal) => { inputValue = val }} />);
+            template='+1 xxx' onFormatted={(val, rawVal) => { inputValue = val }}
+            showPrefixOnFocus={true} hidePrefixOnBlur={false}/>);
 
-        userEvent.click(screen.getByPlaceholderText("Enter number"));
+        userEvent.click(await screen.findByPlaceholderText('Enter number'));
+        userEvent.tab();
+
+        expect(inputValue).toBe("+1 ")
+    })
+
+    test("Hide prefix on blur", async () => {
+        let inputValue = "+1 ";
+        render(<TFReact value={inputValue} placeholder='Enter number'
+                    template='+1 xxx' onFormatted={(val, rawVal) => { inputValue = val }}
+                    showPrefixOnFocus={true} hidePrefixOnBlur={true} />);
+
+        userEvent.click(await screen.findByPlaceholderText("Enter number"));
+
         userEvent.tab();
 
         expect(inputValue).toBe("");
