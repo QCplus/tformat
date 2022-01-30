@@ -40,8 +40,8 @@ var TemplateFormatter = /** @class */ (function () {
         }
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
-        if (props.hidePrefixOnBlur)
-            this.hidePrefixOnBlur = true;
+        if (props.hidePrefixOnBlur !== undefined)
+            this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
     }
     Object.defineProperty(TemplateFormatter.prototype, "templateChar", {
         get: function () {
