@@ -69,7 +69,7 @@ export default class TemplateFormatter {
     }
 
     _initEvents() {
-        this._inputElement?.addEventListener('keyup', this.onKeyUp.bind(this));
+        this._inputElement?.addEventListener('input', this.onInput.bind(this));
         this._inputElement?.addEventListener('focus', this.onFocus.bind(this));
         this._inputElement?.addEventListener('blur', this.onBlur.bind(this));
     }
@@ -328,13 +328,13 @@ export default class TemplateFormatter {
 
     /**
      * Format text and update class state
-     * @param {KeyboardEvent} event onKeyUp event
+     * @param {InputEvent} event input event
      * @returns {string} processed text
      */
-    _processNewInputEvent(event: KeyboardEvent): string {
+    _processNewInputEvent(event: InputEvent): string {
         return this._processNewInput(
         (<HTMLInputElement>event.target).value,
-            event.keyCode === 8 || event.keyCode === 46);
+            event.inputType.startsWith("delete"));
     }
 
     /**
@@ -359,8 +359,13 @@ export default class TemplateFormatter {
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     }
 
-    onKeyUp(event: KeyboardEvent) {
-        this._updateValueInInput(this._processNewInputEvent(event));
+    onInput(event: Event) {
+        let inputEvent = event as InputEvent;
+        let newInput 
+
+        this._updateValueInInput(
+            this._processNewInputEvent(event as InputEvent)
+        );
     }
 
     onFocus(event: FocusEvent) {
@@ -368,10 +373,6 @@ export default class TemplateFormatter {
             this._inputElement.value = this._processNewInput(this._prefixes[0] || '', false);
     }
 
-    /**
-     * 
-     * @param {FocusEvent} event 
-     */
     onBlur(event: FocusEvent) {
         if (this.hidePrefixOnBlur && this.currentPrefix == this._inputElement?.value)
             this._inputElement.value = '';

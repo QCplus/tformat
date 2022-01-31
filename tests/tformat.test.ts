@@ -16,8 +16,11 @@ function clearInputField() {
         inputs[inputs.length - 1].remove();    
 }
 
-function simulateKeyUp() {
-    valueInput.dispatchEvent(new Event('keyup'));
+function simulateInputChange(wasCharDeleted: boolean = false) {
+    valueInput.dispatchEvent(
+        new InputEvent('input', {
+            inputType: wasCharDeleted ? 'deleteContentBackward' : 'insertText'
+        }));
 }
 
 describe("Independent methods", function() {
@@ -145,7 +148,7 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "4";
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe("123 4");
     })
@@ -156,7 +159,7 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "41";
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe("4 1");
     })
@@ -167,7 +170,7 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "1";
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe("123 ");
     })
@@ -179,7 +182,7 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "2";
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe("+2 ");
     })
@@ -190,14 +193,14 @@ describe("Prefixes", function() {
         })
 
         valueInput.value = "+1 "
-        valueInput.dispatchEvent(new KeyboardEvent('keyup', { key: "Backspace", keyCode: 8 }))
+        simulateInputChange(true);
         expect(valueInput.value).toBe("+1 ");
 
-        valueInput.dispatchEvent(new KeyboardEvent('keyup', { key: "Delete", keyCode: 46 }))
+        simulateInputChange(true);
         expect(valueInput.value).toBe("+1 ");
 
         valueInput.value = "+1 (12)"
-        valueInput.dispatchEvent(new KeyboardEvent('keyup', { key: "Backspace", keyCode: 8 }))
+        simulateInputChange(true);
         expect(valueInput.value).toBe("+1 (12")
     })
 
@@ -208,19 +211,19 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "12";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("12");
 
         valueInput.value = "123";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("1234 ");
 
         valueInput.value = "12";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("12");
 
         valueInput.value = "124";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("1245 ");
     })
 
@@ -231,15 +234,15 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "1";
-        simulateKeyUp()
+        simulateInputChange()
         expect(valueInput.value).toBe("1");
 
         valueInput.value = "13";
-        simulateKeyUp()
+        simulateInputChange()
         expect(valueInput.value).toBe("13 ");
 
         valueInput.value = "4";
-        simulateKeyUp()
+        simulateInputChange()
         expect(valueInput.value).toBe("41 ");
     })
 
@@ -250,11 +253,11 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "456";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("4 5 6");
 
         valueInput.value = "2345";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("2 3 4 5");
     })
 
@@ -267,11 +270,11 @@ describe("Prefixes", function() {
         tformat.prefixes = ["5 ", "6 "];
 
         valueInput.value = "456";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("4 5 6");
 
         valueInput.value = "5678";
-        simulateKeyUp();
+        simulateInputChange();
         expect(valueInput.value).toBe("5 6 7 8");
     })
 
@@ -282,9 +285,9 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "2";
-        simulateKeyUp();
+        simulateInputChange();
         valueInput.value = "";
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe('');
         expect(tformat.currentPrefix).toBe('');
@@ -302,11 +305,11 @@ describe("Prefixes", function() {
         });
 
         valueInput.value = "1";
-        simulateKeyUp();
+        simulateInputChange();
         expect(eventDetail).toBe(-1);
 
         valueInput.value = "14";
-        simulateKeyUp();
+        simulateInputChange();
         expect(eventDetail).toBe(1);
     })
 })
@@ -328,7 +331,7 @@ describe("Hidden input", function() {
         });
 
         valueInput.value = "1234";
-        simulateKeyUp();
+        simulateInputChange();
 
         const inputClone = tformat._clonedInput;
         
@@ -392,7 +395,7 @@ describe("General", function() {
         });
 
         valueInput.value = "+1 (23";
-        simulateKeyUp();
+        simulateInputChange();
         
         expect(valueInput.value).toBe("+1 (23)");
     })
@@ -437,7 +440,7 @@ describe("Phone", function() {
         let phone = '19998887766';
 
         valueInput.value = phone;
-        simulateKeyUp();
+        simulateInputChange();
 
         expect(valueInput.value).toBe('1 (999) 888 77 66');
     })

@@ -105,7 +105,7 @@ var TemplateFormatter = /** @class */ (function () {
     });
     TemplateFormatter.prototype._initEvents = function () {
         var _a, _b, _c;
-        (_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.addEventListener('keyup', this.onKeyUp.bind(this));
+        (_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.addEventListener('input', this.onInput.bind(this));
         (_b = this._inputElement) === null || _b === void 0 ? void 0 : _b.addEventListener('focus', this.onFocus.bind(this));
         (_c = this._inputElement) === null || _c === void 0 ? void 0 : _c.addEventListener('blur', this.onBlur.bind(this));
     };
@@ -284,11 +284,11 @@ var TemplateFormatter = /** @class */ (function () {
     };
     /**
      * Format text and update class state
-     * @param {KeyboardEvent} event onKeyUp event
+     * @param {InputEvent} event input event
      * @returns {string} processed text
      */
     TemplateFormatter.prototype._processNewInputEvent = function (event) {
-        return this._processNewInput(event.target.value, event.keyCode === 8 || event.keyCode === 46);
+        return this._processNewInput(event.target.value, event.inputType.startsWith("delete"));
     };
     /**
      *
@@ -307,17 +307,13 @@ var TemplateFormatter = /** @class */ (function () {
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     };
-    TemplateFormatter.prototype.onKeyUp = function (event) {
+    TemplateFormatter.prototype.onInput = function (event) {
         this._updateValueInInput(this._processNewInputEvent(event));
     };
     TemplateFormatter.prototype.onFocus = function (event) {
         if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')
             this._inputElement.value = this._processNewInput(this._prefixes[0] || '', false);
     };
-    /**
-     *
-     * @param {FocusEvent} event
-     */
     TemplateFormatter.prototype.onBlur = function (event) {
         var _a;
         if (this.hidePrefixOnBlur && this.currentPrefix == ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value))
