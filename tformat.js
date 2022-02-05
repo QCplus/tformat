@@ -310,7 +310,7 @@ var TemplateFormatter = /** @class */ (function () {
             var textWithTemplateVals = newInputText.replace(this.nonTemplateValueRegExp, '');
             if (!textWithTemplateVals || textWithTemplateVals == this.currentPrefix.replace(this.nonTemplateValueRegExp, ''))
                 return '';
-            if (this.isPartiallyMatchTemplate(newInputText))
+            if (!this.showTemplateOnFocus && this.isPartiallyMatchTemplate(newInputText))
                 return newInputText;
         }
         var formattedText = this.formatText(newInputText);

@@ -356,7 +356,7 @@ export default class TemplateFormatter {
             const textWithTemplateVals = newInputText.replace(this.nonTemplateValueRegExp, '');
             if (!textWithTemplateVals || textWithTemplateVals == this.currentPrefix.replace(this.nonTemplateValueRegExp, ''))
                 return '';
-            if (this.isPartiallyMatchTemplate(newInputText))
+            if (!this.showTemplateOnFocus && this.isPartiallyMatchTemplate(newInputText))
                 return newInputText;
         }
 
