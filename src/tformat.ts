@@ -5,18 +5,23 @@ export type TemplateFormatterProps = {
     createHiddenInput?: boolean;
     templateForHidden?: string;
     hidePrefixOnBlur?: boolean;
+    showTemplateOnFocus?: boolean;
+    emptySpaceChar?: string;
 }
 
 export default class TemplateFormatter {
     _inputElement: HTMLInputElement | null | undefined;
     _clonedInput: HTMLInputElement | undefined;
     _template = "";
-    _prefixes = new Array<string>();
     _templateForHiddenInput = "";
     _prefixIndex = 0;
-
+    
+    /* Constructor props */
+    _prefixes = new Array<string>();
     showPrefixOnFocus = false;
     hidePrefixOnBlur = true;
+    showTemplateOnFocus = false;
+    emptySpaceChar = ' ';
 
     get templateChar() {
         return 'x';
@@ -24,6 +29,10 @@ export default class TemplateFormatter {
 
     get nonTemplateValueRegExp() {
         return /\D/g;
+    }
+
+    get templateValueRegExp() {
+        return /\d/g;
     }
 
     /**
@@ -126,7 +135,7 @@ export default class TemplateFormatter {
             this._initEvents();
 
             if (this._inputElement.value)
-                this._updateValueInInput(this._processNewInput(
+                this._updateInputValue(this._processNewInput(
                     this._inputElement.value,
                     false
                 ));
@@ -137,6 +146,11 @@ export default class TemplateFormatter {
 
         if (props.hidePrefixOnBlur !== undefined)
             this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
+
+        this.showTemplateOnFocus = props.showTemplateOnFocus ? true : false;
+
+        if (props.emptySpaceChar)
+            this.emptySpaceChar = props.emptySpaceChar[0];
     }
 
     /**
@@ -190,7 +204,7 @@ export default class TemplateFormatter {
      */
     getSuitablePrefixIndex(text: string): number {
         if (!text || !text.trim())
-            return -1;
+            return this._prefixes.length > 0 ? 0 : -1;
 
         let uniqueVal = this.getUniqueMaxVal(
             this.calcPrefixMatchCount(text));
@@ -229,11 +243,12 @@ export default class TemplateFormatter {
 
     /**
      * 
-     * @param {string} textWithPrefix Text with only acceptable chars
+     * @param {string} text Text with prefix
      * @returns {string} Text without prefix
      */
-    removePrefix(textWithPrefix: string): string {
-        let currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
+    removePrefix(text: string): string {
+        const textWithPrefix = text.replace(this.nonTemplateValueRegExp, '');
+        const currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
 
         let prefixEnd = 0;
 
@@ -243,19 +258,35 @@ export default class TemplateFormatter {
         return prefixEnd >= textWithPrefix.length ? '' : textWithPrefix.substring(prefixEnd);
     }
 
+    _fillTemplateWithTextVals(text: string): string {
+        const textWithTemplateVals = this.removePrefix(text);
+
+        let textIndex = 0;
+        let formattedText = '';
+        Array.from(this.template).some((currentTemplateChar) => {
+            if (currentTemplateChar == this.templateChar)
+            {
+                if (textIndex < textWithTemplateVals.length)
+                    formattedText += textWithTemplateVals[textIndex++];
+                else if (this.showTemplateOnFocus)
+                    formattedText += this.emptySpaceChar;
+                else
+                    return true;
+            }
+            else
+                formattedText += currentTemplateChar;
+        });
+        
+        return formattedText;
+    }
+
     /**
      * 
      * @param {string} textToFormat 
      * @returns {string} Formatted text
      */
     formatText(textToFormat: string): string {
-        let textWithTemplateVals = this.removePrefix(textToFormat.replace(this.nonTemplateValueRegExp, ''));
-
-        let formattedText = "";
-        for (let templateIndex = 0, textIndex = 0; templateIndex < this.template.length && textIndex < textWithTemplateVals.length; templateIndex++)
-            formattedText += (this.template[templateIndex] != this.templateChar) ?
-            this.template[templateIndex] :
-            textWithTemplateVals[textIndex++];
+        let formattedText = this._fillTemplateWithTextVals(textToFormat);
 
         return this.pushPostfixIfNeeded(this.currentPrefix + formattedText);
     }
@@ -265,7 +296,7 @@ export default class TemplateFormatter {
      * @param {string} text 
      * @returns {number} index of the first character that differ from template. If text and template are equal than -1
      */
-    _getFirstTemplateMismatch(text: string): number {
+    _getTemplateMismatchIndex(text: string): number {
         let prefixIndx = this.getSuitablePrefixIndex(text);
         let fullTemplate = this._prefixes[prefixIndx] + this.template;
 
@@ -286,7 +317,7 @@ export default class TemplateFormatter {
      */
     isPartiallyMatchTemplate(text: string): boolean {
         if (text) {
-            let firstMismatch = this._getFirstTemplateMismatch(text);
+            let firstMismatch = this._getTemplateMismatchIndex(text);
 
             return firstMismatch >= text.length || firstMismatch == -1;
         }
@@ -299,7 +330,7 @@ export default class TemplateFormatter {
      * @returns {boolean}
      */
     isMatchTemplate(text: string | undefined): boolean {
-        return text ? this._getFirstTemplateMismatch(text) == -1 : false;
+        return text ? this._getTemplateMismatchIndex(text) == -1 : false;
     }
 
     /**
@@ -319,11 +350,19 @@ export default class TemplateFormatter {
      * @returns {string}
      */
     _processNewInput(newInputText: string, wasCharDeleted: boolean): string {
-        if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
-            return newInputText;
         this._updatePossiblePrefix(newInputText);
 
-        return this.formatText(newInputText);
+        if (wasCharDeleted) {
+            const textWithTemplateVals = newInputText.replace(this.nonTemplateValueRegExp, '');
+            if (!textWithTemplateVals || textWithTemplateVals == this.currentPrefix.replace(this.nonTemplateValueRegExp, ''))
+                return '';
+            if (this.isPartiallyMatchTemplate(newInputText))
+                return newInputText;
+        }
+
+        const formattedText = this.formatText(newInputText);
+
+        return formattedText;
     }
 
     /**
@@ -349,21 +388,34 @@ export default class TemplateFormatter {
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     }
 
-    _updateValueInInput(newValue: string) {
+    _moveInputCaret(prevCaretPosition: number) {
         if (!this._inputElement)
             return;
 
+        const inputValue = this._inputElement?.value || '';
+
+        const lastInputValueIndex = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))?.index;
+        const selectionStart = lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
+
+        this._inputElement.selectionStart = selectionStart;
+        this._inputElement.selectionEnd = selectionStart;
+    }
+
+    _updateInputValue(newValue: string) {
+        if (!this._inputElement)
+            return;
+
+        const selectionStart = this._inputElement.selectionStart;
         this._inputElement.value = newValue;
+        if (this.showTemplateOnFocus)
+            this._moveInputCaret(selectionStart || 0);
 
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     }
 
     onInput(event: Event) {
-        let inputEvent = event as InputEvent;
-        let newInput 
-
-        this._updateValueInInput(
+        this._updateInputValue(
             this._processNewInputEvent(event as InputEvent)
         );
     }

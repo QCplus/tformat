@@ -7,11 +7,14 @@ var TemplateFormatter = /** @class */ (function () {
      */
     function TemplateFormatter(inputElement, props) {
         this._template = "";
-        this._prefixes = new Array();
         this._templateForHiddenInput = "";
         this._prefixIndex = 0;
+        /* Constructor props */
+        this._prefixes = new Array();
         this.showPrefixOnFocus = false;
         this.hidePrefixOnBlur = true;
+        this.showTemplateOnFocus = false;
+        this.emptySpaceChar = ' ';
         if (props.template)
             this.template = props.template;
         else
@@ -36,12 +39,15 @@ var TemplateFormatter = /** @class */ (function () {
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
             if (this._inputElement.value)
-                this._updateValueInInput(this._processNewInput(this._inputElement.value, false));
+                this._updateInputValue(this._processNewInput(this._inputElement.value, false));
         }
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
         if (props.hidePrefixOnBlur !== undefined)
             this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
+        this.showTemplateOnFocus = props.showTemplateOnFocus ? true : false;
+        if (props.emptySpaceChar)
+            this.emptySpaceChar = props.emptySpaceChar[0];
     }
     Object.defineProperty(TemplateFormatter.prototype, "templateChar", {
         get: function () {
@@ -53,6 +59,13 @@ var TemplateFormatter = /** @class */ (function () {
     Object.defineProperty(TemplateFormatter.prototype, "nonTemplateValueRegExp", {
         get: function () {
             return /\D/g;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TemplateFormatter.prototype, "templateValueRegExp", {
+        get: function () {
+            return /\d/g;
         },
         enumerable: false,
         configurable: true
@@ -172,7 +185,7 @@ var TemplateFormatter = /** @class */ (function () {
      */
     TemplateFormatter.prototype.getSuitablePrefixIndex = function (text) {
         if (!text || !text.trim())
-            return -1;
+            return this._prefixes.length > 0 ? 0 : -1;
         var uniqueVal = this.getUniqueMaxVal(this.calcPrefixMatchCount(text));
         return uniqueVal.value === 0 ? 0 : uniqueVal.index;
     };
@@ -202,15 +215,35 @@ var TemplateFormatter = /** @class */ (function () {
     };
     /**
      *
-     * @param {string} textWithPrefix Text with only acceptable chars
+     * @param {string} text Text with prefix
      * @returns {string} Text without prefix
      */
-    TemplateFormatter.prototype.removePrefix = function (textWithPrefix) {
+    TemplateFormatter.prototype.removePrefix = function (text) {
+        var textWithPrefix = text.replace(this.nonTemplateValueRegExp, '');
         var currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
         var prefixEnd = 0;
         while (textWithPrefix[prefixEnd] && currentPrefix[prefixEnd] === textWithPrefix[prefixEnd])
             prefixEnd++;
         return prefixEnd >= textWithPrefix.length ? '' : textWithPrefix.substring(prefixEnd);
+    };
+    TemplateFormatter.prototype._fillTemplateWithTextVals = function (text) {
+        var _this = this;
+        var textWithTemplateVals = this.removePrefix(text);
+        var textIndex = 0;
+        var formattedText = '';
+        Array.from(this.template).some(function (currentTemplateChar) {
+            if (currentTemplateChar == _this.templateChar) {
+                if (textIndex < textWithTemplateVals.length)
+                    formattedText += textWithTemplateVals[textIndex++];
+                else if (_this.showTemplateOnFocus)
+                    formattedText += _this.emptySpaceChar;
+                else
+                    return true;
+            }
+            else
+                formattedText += currentTemplateChar;
+        });
+        return formattedText;
     };
     /**
      *
@@ -218,12 +251,7 @@ var TemplateFormatter = /** @class */ (function () {
      * @returns {string} Formatted text
      */
     TemplateFormatter.prototype.formatText = function (textToFormat) {
-        var textWithTemplateVals = this.removePrefix(textToFormat.replace(this.nonTemplateValueRegExp, ''));
-        var formattedText = "";
-        for (var templateIndex = 0, textIndex = 0; templateIndex < this.template.length && textIndex < textWithTemplateVals.length; templateIndex++)
-            formattedText += (this.template[templateIndex] != this.templateChar) ?
-                this.template[templateIndex] :
-                textWithTemplateVals[textIndex++];
+        var formattedText = this._fillTemplateWithTextVals(textToFormat);
         return this.pushPostfixIfNeeded(this.currentPrefix + formattedText);
     };
     /**
@@ -231,7 +259,7 @@ var TemplateFormatter = /** @class */ (function () {
      * @param {string} text
      * @returns {number} index of the first character that differ from template. If text and template are equal than -1
      */
-    TemplateFormatter.prototype._getFirstTemplateMismatch = function (text) {
+    TemplateFormatter.prototype._getTemplateMismatchIndex = function (text) {
         var prefixIndx = this.getSuitablePrefixIndex(text);
         var fullTemplate = this._prefixes[prefixIndx] + this.template;
         for (var i = 0; i < Math.min(text.length, fullTemplate.length); i++)
@@ -248,7 +276,7 @@ var TemplateFormatter = /** @class */ (function () {
      */
     TemplateFormatter.prototype.isPartiallyMatchTemplate = function (text) {
         if (text) {
-            var firstMismatch = this._getFirstTemplateMismatch(text);
+            var firstMismatch = this._getTemplateMismatchIndex(text);
             return firstMismatch >= text.length || firstMismatch == -1;
         }
         return false;
@@ -259,7 +287,7 @@ var TemplateFormatter = /** @class */ (function () {
      * @returns {boolean}
      */
     TemplateFormatter.prototype.isMatchTemplate = function (text) {
-        return text ? this._getFirstTemplateMismatch(text) == -1 : false;
+        return text ? this._getTemplateMismatchIndex(text) == -1 : false;
     };
     /**
      *
@@ -277,10 +305,16 @@ var TemplateFormatter = /** @class */ (function () {
      * @returns {string}
      */
     TemplateFormatter.prototype._processNewInput = function (newInputText, wasCharDeleted) {
-        if (wasCharDeleted && this.isPartiallyMatchTemplate(newInputText))
-            return newInputText;
         this._updatePossiblePrefix(newInputText);
-        return this.formatText(newInputText);
+        if (wasCharDeleted) {
+            var textWithTemplateVals = newInputText.replace(this.nonTemplateValueRegExp, '');
+            if (!textWithTemplateVals || textWithTemplateVals == this.currentPrefix.replace(this.nonTemplateValueRegExp, ''))
+                return '';
+            if (this.isPartiallyMatchTemplate(newInputText))
+                return newInputText;
+        }
+        var formattedText = this.formatText(newInputText);
+        return formattedText;
     };
     /**
      * Format text and update class state
@@ -300,15 +334,28 @@ var TemplateFormatter = /** @class */ (function () {
             return '';
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     };
-    TemplateFormatter.prototype._updateValueInInput = function (newValue) {
+    TemplateFormatter.prototype._moveInputCaret = function (prevCaretPosition) {
+        var _a, _b;
         if (!this._inputElement)
             return;
+        var inputValue = ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value) || '';
+        var lastInputValueIndex = (_b = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))) === null || _b === void 0 ? void 0 : _b.index;
+        var selectionStart = lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
+        this._inputElement.selectionStart = selectionStart;
+        this._inputElement.selectionEnd = selectionStart;
+    };
+    TemplateFormatter.prototype._updateInputValue = function (newValue) {
+        if (!this._inputElement)
+            return;
+        var selectionStart = this._inputElement.selectionStart;
         this._inputElement.value = newValue;
+        if (this.showTemplateOnFocus)
+            this._moveInputCaret(selectionStart || 0);
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     };
     TemplateFormatter.prototype.onInput = function (event) {
-        this._updateValueInInput(this._processNewInputEvent(event));
+        this._updateInputValue(this._processNewInputEvent(event));
     };
     TemplateFormatter.prototype.onFocus = function (event) {
         if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')

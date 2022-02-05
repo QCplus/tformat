@@ -1,4 +1,4 @@
-import TemplateFormatter from '../src/tformat';
+import TemplateFormatter, { TemplateFormatterProps } from '../src/tformat';
 
 const INPUT_ID = "testInput"
 var valueInput: HTMLInputElement;
@@ -23,6 +23,10 @@ function simulateInputChange(wasCharDeleted: boolean = false) {
         }));
 }
 
+function createTFormat(props: TemplateFormatterProps) {
+    return new TemplateFormatter(valueInput, props);
+}
+
 describe("Independent methods", function() {
     test("Test get max unique val", function() {
         let tformat = new TemplateFormatter(null, {
@@ -39,8 +43,7 @@ describe("Independent methods", function() {
             prefixes: ["+156 ", "+645 "]
         });
 
-        expect(tformat.getSuitablePrefixIndex('')).toBe(-1);
-        expect(tformat.getSuitablePrefixIndex('  ')).toBe(-1);
+        expect(tformat.getSuitablePrefixIndex(' ')).toBe(0);
         expect(tformat.getSuitablePrefixIndex("1")).toBe(-1);
         expect(tformat.getSuitablePrefixIndex("+15")).toBe(1);
     })
@@ -98,12 +101,12 @@ describe("Independent methods", function() {
             template: "+123-(xxx)"
         });
 
-        expect(tformat._getFirstTemplateMismatch("+123-(123)")).toBe(-1);
-        expect(tformat._getFirstTemplateMismatch("")).toBe(0);
-        expect(tformat._getFirstTemplateMismatch("+124-(456)")).toBe(3);
-        expect(tformat._getFirstTemplateMismatch("+123-(f45)")).toBe(6);
-        expect(tformat._getFirstTemplateMismatch("+123-(123")).toBe(9);
-        expect(tformat._getFirstTemplateMismatch("+123-(1234)")).toBe(9);
+        expect(tformat._getTemplateMismatchIndex("+123-(123)")).toBe(-1);
+        expect(tformat._getTemplateMismatchIndex("")).toBe(0);
+        expect(tformat._getTemplateMismatchIndex("+124-(456)")).toBe(3);
+        expect(tformat._getTemplateMismatchIndex("+123-(f45)")).toBe(6);
+        expect(tformat._getTemplateMismatchIndex("+123-(123")).toBe(9);
+        expect(tformat._getTemplateMismatchIndex("+123-(1234)")).toBe(9);
     })
 
     test("Test isPartiallyMatchTemplate", function() {
@@ -161,7 +164,7 @@ describe("Prefixes", function() {
         valueInput.value = "41";
         simulateInputChange();
 
-        expect(valueInput.value).toBe("4 1");
+        expect(valueInput.value).toBe("4 1 ");
     })
 
     test("Test when enters first char from template", function() {
@@ -191,13 +194,6 @@ describe("Prefixes", function() {
         new TemplateFormatter(valueInput, {
             template: "+1 (xxx) xxx"
         })
-
-        valueInput.value = "+1 "
-        simulateInputChange(true);
-        expect(valueInput.value).toBe("+1 ");
-
-        simulateInputChange(true);
-        expect(valueInput.value).toBe("+1 ");
 
         valueInput.value = "+1 (12)"
         simulateInputChange(true);
@@ -287,10 +283,10 @@ describe("Prefixes", function() {
         valueInput.value = "2";
         simulateInputChange();
         valueInput.value = "";
-        simulateInputChange();
+        simulateInputChange(true);
 
         expect(valueInput.value).toBe('');
-        expect(tformat.currentPrefix).toBe('');
+        expect(tformat.currentPrefix).toBe('1 ');
     })
 
     test("Test on prefix change event", function() {
@@ -311,6 +307,21 @@ describe("Prefixes", function() {
         valueInput.value = "14";
         simulateInputChange();
         expect(eventDetail).toBe(1);
+    })
+
+    test("On prefix has removed", () => {
+        createTFormat({
+            template: "+1 xxx xxx",
+            prefixes: ["+2 "],
+        });
+
+        valueInput.value = "+1 ";
+        simulateInputChange();
+
+        valueInput.value = "+";
+        simulateInputChange(true);
+
+        expect(valueInput.value).toBe('');
     })
 })
 
@@ -421,6 +432,47 @@ describe("General", function() {
         expect(tformat.isMatchTemplate("5 4 3 2")).toBe(false);
         expect(tformat.isMatchTemplate("2 3 4 5")).toBe(true);
     })
+
+    test("Space pressed", function() {
+        createTFormat({
+            template: "1 x x x",
+            prefixes: ["2 ", "3 "]
+        });
+
+        valueInput.value = " ";
+        simulateInputChange();
+
+        expect(valueInput.value).toBe("1 ");
+    })
+
+    test("On remove non template value", () => {
+        createTFormat({
+            template: '+1 (xxx) xxx xx xx',
+            showPrefixOnFocus: true
+        });
+
+        valueInput.value = "+1 (234)";
+        simulateInputChange();
+
+        valueInput.value = "+1 (234";
+        simulateInputChange(true);
+
+        expect(valueInput.value).toBe("+1 (234");
+    })
+
+    test("If value in the middle of template was removed", () => {
+        createTFormat({
+            template: "+1 (xxx) xxx"
+        });
+
+        valueInput.value = "+1 (234) ";
+        simulateInputChange();
+
+        valueInput.value = "+1 (24) ";
+        simulateInputChange(true);
+
+        expect(valueInput.value).toBe("+1 (24");
+    })
 })
 
 describe("Phone", function() {
@@ -489,5 +541,127 @@ describe("Focus and blur", () => {
         valueInput.dispatchEvent(new FocusEvent('blur'));
 
         expect(valueInput.value).toBe('+1 ');
+    })
+})
+
+describe("Full template display", () => {
+    beforeEach(() => {
+        setupInputField();
+    })
+
+    afterEach(() => {
+        clearInputField();
+    })
+
+    test("Show template on focus", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showPrefixOnFocus: true,
+            showTemplateOnFocus: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+
+        expect(valueInput.value).toBe('+1 (   )   -  -  ');
+    })
+
+    test("Show template on focus with custom chars", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showPrefixOnFocus: true,
+            showTemplateOnFocus: true,
+            emptySpaceChar: '__',
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+
+        expect(valueInput.value).toBe("+1 (___)___-__-__");
+    })
+
+    test("Input with full template display", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showPrefixOnFocus: true,
+            showTemplateOnFocus: true,
+            emptySpaceChar: '_',
+        });
+
+        valueInput.value = "2";
+        simulateInputChange();
+
+        expect(valueInput.value).toBe("+1 (2__)___-__-__");
+    })
+
+    test("Input caret has moved", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showPrefixOnFocus: true,
+            showTemplateOnFocus: true,
+        });
+
+        valueInput.value = "23";
+        simulateInputChange();
+
+        expect(valueInput.selectionStart == valueInput.selectionEnd).toBeTruthy();
+        expect(valueInput.selectionStart).toBe(6);
+    })
+
+    test("Input caret position after char deletion", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showTemplateOnFocus: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        valueInput.value = "+1 (23)   -  -  ";
+        valueInput.selectionStart = 6, valueInput.selectionEnd = 6;
+        simulateInputChange(true);
+        
+        expect(valueInput.value).toBe("+1 (23 )   -  -  ");
+        expect(valueInput.selectionStart).toBe(6);
+    })
+
+    test("On prefix has removed", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showTemplateOnFocus: true,
+            emptySpaceChar: '_'
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        valueInput.selectionStart = 2, valueInput.selectionEnd = 2;
+        valueInput.value = "+ (___)___-__-__";
+        simulateInputChange(true);
+
+        expect(valueInput.value).toBe('');
+    })
+
+    test("Space pressed", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showTemplateOnFocus: true,
+            prefixes: ["+2 ("],
+            emptySpaceChar: '_'
+        });
+
+        valueInput.value = " ";
+        simulateInputChange();
+
+        expect(valueInput.value).toBe("+1 (___)___-__-__");
+    })
+
+    test("If delete before delimiter", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showTemplateOnFocus: true,
+            emptySpaceChar: '_'
+        });
+
+        valueInput.value = "+1 (234)567-89-10";
+        simulateInputChange();
+        valueInput.value = "+1 (234)567-89-";
+        simulateInputChange(true);
+
+        expect(valueInput.value).toBe("+1 (234)567-89-__");
     })
 })
