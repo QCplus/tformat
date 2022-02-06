@@ -5,7 +5,7 @@ function initPhoneInput() {
         template: '+1 (xxx) xxx xx xx',
         createHiddenInput: true,
         prefixes: ["+4 ("],
-        showTemplateOnFocus: true,
+        showFullTemplate: true,
         emptySpaceChar: '_'
     });
 

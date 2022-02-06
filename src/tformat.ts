@@ -5,7 +5,7 @@ export type TemplateFormatterProps = {
     createHiddenInput?: boolean;
     templateForHidden?: string;
     hidePrefixOnBlur?: boolean;
-    showTemplateOnFocus?: boolean;
+    showFullTemplate?: boolean;
     emptySpaceChar?: string;
 }
 
@@ -147,7 +147,7 @@ export default class TemplateFormatter {
         if (props.hidePrefixOnBlur !== undefined)
             this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
 
-        this.showTemplateOnFocus = props.showTemplateOnFocus ? true : false;
+        this.showTemplateOnFocus = props.showFullTemplate ? true : false;
 
         if (props.emptySpaceChar)
             this.emptySpaceChar = props.emptySpaceChar[0];

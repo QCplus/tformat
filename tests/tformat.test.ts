@@ -557,7 +557,7 @@ describe("Full template display", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
             showPrefixOnFocus: true,
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
         });
 
         valueInput.dispatchEvent(new FocusEvent('focus'));
@@ -569,7 +569,7 @@ describe("Full template display", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
             showPrefixOnFocus: true,
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
             emptySpaceChar: '__',
         });
 
@@ -582,7 +582,7 @@ describe("Full template display", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
             showPrefixOnFocus: true,
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
             emptySpaceChar: '_',
         });
 
@@ -596,7 +596,7 @@ describe("Full template display", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
             showPrefixOnFocus: true,
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
         });
 
         valueInput.value = "23";
@@ -609,7 +609,7 @@ describe("Full template display", () => {
     test("Input caret position after char deletion", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
         });
 
         valueInput.dispatchEvent(new FocusEvent('focus'));
@@ -624,7 +624,7 @@ describe("Full template display", () => {
     test("On prefix has removed", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
             emptySpaceChar: '_'
         });
 
@@ -639,7 +639,7 @@ describe("Full template display", () => {
     test("Space pressed", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
             prefixes: ["+2 ("],
             emptySpaceChar: '_'
         });
@@ -653,7 +653,7 @@ describe("Full template display", () => {
     test("If delete before delimiter", () => {
         createTFormat({
             template: "+1 (xxx)xxx-xx-xx",
-            showTemplateOnFocus: true,
+            showFullTemplate: true,
             emptySpaceChar: '_'
         });
 

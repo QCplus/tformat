@@ -45,7 +45,7 @@ var TemplateFormatter = /** @class */ (function () {
             this._prefixes = this._prefixes.concat(props.prefixes);
         if (props.hidePrefixOnBlur !== undefined)
             this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
-        this.showTemplateOnFocus = props.showTemplateOnFocus ? true : false;
+        this.showTemplateOnFocus = props.showFullTemplate ? true : false;
         if (props.emptySpaceChar)
             this.emptySpaceChar = props.emptySpaceChar[0];
     }
