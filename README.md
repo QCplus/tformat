@@ -84,13 +84,15 @@ First parameter of constructor is an element that need to be formated. It can be
 
 Additional options goes in second parameter as one object. Possible object properties listed below
 
-| Name             | Type     | Is mandatory | Default | Description | 
-| ---------------- | -------- | ------------ | ------- | ----------- |
-| template         | string   | Yes          |         | Template for value formatting |
-| prefixes         | string[] | No           |         | Possible template prefixes. If user enters first character from `prefixes` then this prefix will be used in input, otherwise template prefix will be used |
-| showPrefixOnFocus| boolean  | No           | false   | If `true` then template prefix will be shown after user clicks on input |
-| createHiddenInput| boolean  | No           | false   | If `true` then hidden clone of input will be created, that contains only numbers. It can be used in form submitting |
-| hidePrefixOnBlur | boolean  | No           | true    | If value input equals template prefix then value will be cleared |
+| Name             | Type     | Mandatory | Default | Description | 
+| ---------------- | -------- | --------- | ------- | ----------- |
+| template         | string   | Yes       |         | Template for value formatting |
+| prefixes         | string[] | No        |         | Possible template prefixes. If user enters first character from `prefixes` then this prefix will be used in input, otherwise template prefix will be used |
+| showPrefixOnFocus| boolean  | No        | false   | If `true` then template prefix will be shown after user clicks on input |
+| createHiddenInput| boolean  | No        | false   | If `true` then hidden clone of input will be created, that contains only numbers. It can be used in form submitting |
+| hidePrefixOnBlur | boolean  | No        | true    | If value input equals template prefix then value will be cleared |
+| showFullTemplate | boolean  | No        | false   | If `true` then full template will be shown. [See examples](https://qcplus.github.io/tformat/) |
+| emptySpaceChar   | string   | No        | '&nbsp;'| Used as placeholder for `x` characters if showFullTemplate is `true` |
 
 ## Properties
 
