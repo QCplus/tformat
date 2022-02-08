@@ -1,9 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import TFReact from './TFReact';
-import { wait } from '@testing-library/user-event/dist/utils';
+import TFReact, { TFReactProps } from './TFReact';
 
 describe("TFReact", () => {
     test("Render the input", () => {
@@ -15,17 +14,40 @@ describe("TFReact", () => {
         render(<TFReact value={inputValue} placeholder='Enter number'
             template='+1 xxx' onFormatted={(val, rawVal) => { inputValue = val }} showPrefixOnFocus={true} />);
         
-        await userEvent.type(screen.getByPlaceholderText("Enter number"), "2");
+        userEvent.type(screen.getByPlaceholderText("Enter number"), "2");
 
-        expect(inputValue).toBe("+1 2");
+        await waitFor(() => {
+            expect(inputValue).toBe("+1 2");
+        })
+    })
+
+    test("Delete char after space", async () => {
+        let inputValue = "";
+        render(<TFReact value={inputValue} placeholder="Enter number"
+                template='+1 xxx xxx xx xx' onFormatted={(val, rawVal) => { inputValue = val}} showPrefixOnFocus={true} />);
+        
+        fireEvent.change(screen.getByPlaceholderText("Enter number"), { target: { value: "234" }});
+
+        expect(inputValue).toBe("+1 234 ");
+
+        fireEvent.keyDown(screen.getByPlaceholderText("Enter number"), {
+            key: 'Backspace',
+            keyCode: 8
+        });
+        fireEvent.input(screen.getByPlaceholderText("Enter number"), {
+            target: { value: "+1 234" },
+            inputType: 'deleteContentBackward',
+            bubbles: true,
+            cancelable: true,
+        });
+
+        expect(inputValue).toBe("+1 234");
     })
 
     test("Init with predefined value", () => {
         let inputValue = "2";
         render(<TFReact value={inputValue} placeholder='Enter number'
             template='+1 xxx' onFormatted={(val, rawVal) => { inputValue = val }} showPrefixOnFocus={true} />);
-
-        var inputElem = screen.getByPlaceholderText("Enter number") as HTMLInputElement;
 
         expect(inputValue).toBe("+1 2");
     })
@@ -63,5 +85,22 @@ describe("TFReact", () => {
         userEvent.tab();
 
         expect(inputValue).toBe("");
+    })
+})
+
+describe("React full template display", () => {
+    test("Type number in the middle", async () => {
+        let inputValue = "+1 234 ";
+        render(<TFReact value={inputValue} placeholder="Enter number"
+                template='+1 xxx xxx xx xx' onFormatted={(val, rawVal) => { inputValue = val }}
+                showFullTemplate={true} emptySpaceChar='_' />);
+
+        userEvent.click(screen.getByPlaceholderText("Enter number"));
+        userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+        userEvent.type(screen.getByPlaceholderText("Enter number"), "1", { skipClick: true });
+
+        await waitFor(() => {
+            expect(inputValue).toBe("+1 231 4__ __ __")
+        });
     })
 })

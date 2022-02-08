@@ -1,37 +1,39 @@
 import React from 'react';
 
-import TemplateFormatter from '../tformat';
+import TemplateFormatter, { TFBaseProps } from '../tformat';
 
 export type TFReactState = {
-    formatter: TemplateFormatter
+    formatter: TemplateFormatter,
+    wasCharDeleted: boolean,
+    prevCaretPosition: number,
 }
 
 export type TFReactProps = {
-    template: string,
-    prefixes?: string[],
-    showPrefixOnFocus?: boolean,
-    hidePrefixOnBlur?: boolean,
     onFormatted: (val: string, rawVal: string) => void
-} & React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
+}   & TFBaseProps
+    & React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 
 export class TFReact extends React.Component<TFReactProps, TFReactState> {
+    inputRef: React.RefObject<HTMLInputElement>;
+
     constructor(props: TFReactProps) {
         super(props);
 
         this.state = {
-            formatter: new TemplateFormatter(null, {
-                template: props.template,
-                prefixes: props.prefixes,
-                showPrefixOnFocus: props.showPrefixOnFocus,
-                createHiddenInput: false,
-                hidePrefixOnBlur: props.hidePrefixOnBlur
-            })
+            formatter: new TemplateFormatter(null, props as TFBaseProps),
+            wasCharDeleted: false,
+            prevCaretPosition: 0
         }
 
-        if (this.props.value)
-            this.updateValue(
-                this.state.formatter._processNewInput(this.props.value as string, false)
+        if (this.props.value) {
+            const formattedValue = this.state.formatter._processNewInput(this.props.value as string, false);
+            this.props.onFormatted(
+                formattedValue,
+                this.state.formatter.getRawValue(formattedValue)
             );
+        }
+
+        this.inputRef = React.createRef<HTMLInputElement>();
     }
 
     updateValue(formattedValue: string) {
@@ -39,11 +41,32 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
             formattedValue,
             this.state.formatter.getRawValue(formattedValue)
         );
+
+        this.setState({
+            formatter: this.state.formatter,
+            wasCharDeleted: this.state.wasCharDeleted,
+            prevCaretPosition: this.inputRef?.current?.selectionStart || 0
+        }, () => {
+            if (this.props.showFullTemplate && this.inputRef.current) {
+                const selectionPosition = this.state.formatter._getInputCaretPosition(this.state.prevCaretPosition, this.props.value?.toString() || '');
+
+                this.inputRef.current.setSelectionRange(selectionPosition, selectionPosition);
+            }
+        })
+    }
+
+    onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        this.setState({
+            formatter: this.state.formatter,
+            wasCharDeleted: e.key == 'Backspace' || e.key == 'Delete'
+        });
+
+        this.props.onKeyDown && this.props.onKeyDown(e);
     }
 
     onChange(e: React.ChangeEvent<HTMLInputElement>) {
         this.updateValue(
-            this.state.formatter._processNewInput(e.target.value, false)
+            this.state.formatter._processNewInput(e.target.value, this.state.wasCharDeleted)
         );
     }
 
@@ -67,7 +90,7 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
     }
 
     render(): React.ReactNode {
-        return <input
+        return <input ref={this.inputRef}
             id={this.props.id}
             className={this.props.className}
             type={this.props.type}
@@ -82,11 +105,11 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
             onSelect={this.props.onSelect}
             onSubmit={this.props.onSubmit}
             onReset={this.props.onReset}
-            onKeyDown={this.props.onKeyDown}
+            onKeyDown={this.onKeyDown.bind(this)}
             onKeyPress={this.props.onKeyPress}
             onKeyUp={this.props.onKeyUp}
             onChange={this.onChange.bind(this)} />
-    }    
+    }
 }
 
 export default TFReact;

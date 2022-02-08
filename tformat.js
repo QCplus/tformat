@@ -334,23 +334,19 @@ var TemplateFormatter = /** @class */ (function () {
             return '';
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     };
-    TemplateFormatter.prototype._moveInputCaret = function (prevCaretPosition) {
-        var _a, _b;
-        if (!this._inputElement)
-            return;
-        var inputValue = ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value) || '';
-        var lastInputValueIndex = (_b = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))) === null || _b === void 0 ? void 0 : _b.index;
-        var selectionStart = lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
-        this._inputElement.selectionStart = selectionStart;
-        this._inputElement.selectionEnd = selectionStart;
+    TemplateFormatter.prototype._getInputCaretPosition = function (prevCaretPosition, inputValue) {
+        var _a;
+        var lastInputValueIndex = (_a = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))) === null || _a === void 0 ? void 0 : _a.index;
+        return lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
     };
     TemplateFormatter.prototype._updateInputValue = function (newValue) {
         if (!this._inputElement)
             return;
-        var selectionStart = this._inputElement.selectionStart;
+        var selectionStart = this._inputElement.selectionStart || 0;
         this._inputElement.value = newValue;
         if (this.showTemplateOnFocus)
-            this._moveInputCaret(selectionStart || 0);
+            this._inputElement.selectionStart = this._inputElement.selectionEnd
+                = this._getInputCaretPosition(selectionStart, newValue);
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     };

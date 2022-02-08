@@ -1,13 +1,16 @@
-export type TemplateFormatterProps = {
+export type TFBaseProps = {
     template: string;
     prefixes?: string[];
     showPrefixOnFocus?: boolean;
-    createHiddenInput?: boolean;
-    templateForHidden?: string;
     hidePrefixOnBlur?: boolean;
     showFullTemplate?: boolean;
     emptySpaceChar?: string;
 }
+
+export type TemplateFormatterProps = {
+    createHiddenInput?: boolean;
+    templateForHidden?: string;
+} & TFBaseProps;
 
 export default class TemplateFormatter {
     _inputElement: HTMLInputElement | null | undefined;
@@ -388,27 +391,21 @@ export default class TemplateFormatter {
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     }
 
-    _moveInputCaret(prevCaretPosition: number) {
-        if (!this._inputElement)
-            return;
-
-        const inputValue = this._inputElement?.value || '';
-
+    _getInputCaretPosition(prevCaretPosition: number, inputValue: string) {
         const lastInputValueIndex = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))?.index;
-        const selectionStart = lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
 
-        this._inputElement.selectionStart = selectionStart;
-        this._inputElement.selectionEnd = selectionStart;
+        return lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
     }
 
     _updateInputValue(newValue: string) {
         if (!this._inputElement)
             return;
 
-        const selectionStart = this._inputElement.selectionStart;
+        const selectionStart = this._inputElement.selectionStart || 0;
         this._inputElement.value = newValue;
         if (this.showTemplateOnFocus)
-            this._moveInputCaret(selectionStart || 0);
+            this._inputElement.selectionStart = this._inputElement.selectionEnd 
+                = this._getInputCaretPosition(selectionStart, newValue);
 
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
