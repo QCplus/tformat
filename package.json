@@ -1,7 +1,7 @@
 {
   "name": "tformat.js",
   "version": "1.0.9",
-  "description": "lightweight library for number formatting",
+  "description": "lightweight library for formatting input values",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "files": [
