@@ -23,6 +23,11 @@ function simulateInputChange(wasCharDeleted: boolean = false) {
         }));
 }
 
+function simulateChange(newValue: string, wasCharDeleted: boolean = false) {
+    valueInput.value = newValue;
+    simulateInputChange(wasCharDeleted);
+}
+
 function createTFormat(props: TemplateFormatterProps) {
     return new TemplateFormatter(valueInput, props);
 }
@@ -76,6 +81,14 @@ describe("Independent methods", function() {
         expect(tformat.pushPostfixIfNeeded('123 (xxx')).toBe('123 (xxx)');
     })
 
+    test("removePrefixFormatted", () => {
+        let tformat = new TemplateFormatter(null, {
+            template: "+123 (xxx)"
+        });
+
+        expect(tformat.removePrefixFormatted("+123 (456)")).toBe("456)");
+    })
+
     test("Test removePrefix", function() {
         let tformat = new TemplateFormatter(null, {
             template: "+123 (xxx)"
@@ -85,6 +98,14 @@ describe("Independent methods", function() {
 
         tformat.template = "xxx";
         expect(tformat.removePrefix("123")).toBe("123");
+    })
+
+    test("removeNonTemplateVals", () => {
+        let tformat = new TemplateFormatter(null, {
+            template: "+123 (xxx)"
+        });
+
+        expect(tformat.removeNonTemplateVals("+123 (344)")).toBe("123344");
     })
 
     test("Test formatText", function() {
@@ -132,6 +153,31 @@ describe("Independent methods", function() {
         expect(tformat.isMatchTemplate("+123-(345)")).toBe(true);
         expect(tformat.isMatchTemplate("+456-(345)")).toBe(false);
         expect(tformat.isMatchTemplate("+123-(1234)")).toBe(false);
+    })
+
+    test("_findNextTemplateVal", () => {
+        const tformat = createTFormat({
+            template: "+1 (xxx) xxx"
+        });
+
+        expect(tformat._findNextTemplateVal("+1 (234) 5", 6)).toBe(9);
+        expect(tformat._findNextTemplateVal("+1 (234) ", 6)).toBe(-1);
+    })
+
+    test("_getInputCaretPosition", () => {
+        const tformat = createTFormat({
+            template: "+1 (xxx) xxx-xx-xx"
+        });
+
+        expect(tformat._getInputCaretPosition(10, "+1 (234) 4", false)).toBe(10);
+        expect(tformat._getInputCaretPosition(6, "+1 (234) 5", false)).toBe(6);
+        expect(tformat._getInputCaretPosition(8, "+1 (234)", true)).toBe(8);
+
+        expect(tformat._getInputCaretPosition(1, "+1 (", false)).toBe(4);
+        expect(tformat._getInputCaretPosition(1, "+1 (2__) ___-__-__", false)).toBe(5);
+        expect(tformat._getInputCaretPosition(4, "+1 (2__) ___-__-__", true)).toBe(4);
+
+        expect(tformat._getInputCaretPosition(8, "+1 (234) 2", false)).toBe(10);
     })
 })
 
@@ -587,9 +633,11 @@ describe("Full template display", () => {
         });
 
         valueInput.value = "2";
+        valueInput.setSelectionRange(1, 1);
         simulateInputChange();
 
         expect(valueInput.value).toBe("+1 (2__)___-__-__");
+        expect(valueInput.selectionStart).toBe(5);
     })
 
     test("Input caret has moved", () => {
@@ -599,26 +647,14 @@ describe("Full template display", () => {
             showFullTemplate: true,
         });
 
-        valueInput.value = "23";
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+
+        valueInput.value = "+1 (2   )   -  -  ";
+        valueInput.setSelectionRange(5, 5);
         simulateInputChange();
 
         expect(valueInput.selectionStart == valueInput.selectionEnd).toBeTruthy();
-        expect(valueInput.selectionStart).toBe(6);
-    })
-
-    test("Input caret position after char deletion", () => {
-        createTFormat({
-            template: "+1 (xxx)xxx-xx-xx",
-            showFullTemplate: true,
-        });
-
-        valueInput.dispatchEvent(new FocusEvent('focus'));
-        valueInput.value = "+1 (23)   -  -  ";
-        valueInput.selectionStart = 6, valueInput.selectionEnd = 6;
-        simulateInputChange(true);
-        
-        expect(valueInput.value).toBe("+1 (23 )   -  -  ");
-        expect(valueInput.selectionStart).toBe(6);
+        expect(valueInput.selectionStart).toBe(5);
     })
 
     test("On prefix has removed", () => {
@@ -629,7 +665,7 @@ describe("Full template display", () => {
         });
 
         valueInput.dispatchEvent(new FocusEvent('focus'));
-        valueInput.selectionStart = 2, valueInput.selectionEnd = 2;
+        valueInput.setSelectionRange(2, 2);
         valueInput.value = "+ (___)___-__-__";
         simulateInputChange(true);
 
@@ -659,9 +695,80 @@ describe("Full template display", () => {
 
         valueInput.value = "+1 (234)567-89-10";
         simulateInputChange();
-        valueInput.value = "+1 (234)567-89-";
-        simulateInputChange(true);
+
+        simulateChange("+1 (234)567-89-", true);
 
         expect(valueInput.value).toBe("+1 (234)567-89-__");
+    })
+
+    test("Input after non template val", () => {
+        createTFormat({
+            template: "+1 (xxx) xxx",
+            showFullTemplate: true,
+            emptySpaceChar: '_'
+        });
+
+        valueInput.value = "+1 (234) 2";
+        valueInput.setSelectionRange(8, 8);
+        simulateInputChange();
+
+        expect(valueInput.selectionStart).toBe(10);
+    })
+})
+
+describe("Input caret", () => {
+    beforeEach(() => {
+        setupInputField();
+    })
+
+    afterEach(() => {
+        clearInputField();
+    })
+
+    test("Print char in the middle", () => {
+        createTFormat({
+            template: "+1 (xxx) xxx-xx-xx"
+        });
+
+        valueInput.value = "+1 (123) 4";
+        simulateInputChange();
+
+        valueInput.value = "+1 (1523) 4";
+        valueInput.selectionStart = 6;
+        simulateInputChange();
+
+        expect(valueInput.value).toBe("+1 (152) 34")
+        expect(valueInput.selectionStart).toBe(6);
+    })
+
+    test("Remove char from the middle", () => {
+        createTFormat({
+            template: "+1 (xxx) xxx-xx-xx"
+        });
+
+        valueInput.value = "+1 (234) 5";
+        valueInput.setSelectionRange(10, 10);
+        simulateInputChange();
+
+        valueInput.value = "+1 (24) 5";
+        valueInput.setSelectionRange(5, 5);
+        simulateInputChange(true);
+
+        expect(valueInput.selectionStart).toBe(5);
+    })
+
+    test("Input caret position after char deletion", () => {
+        createTFormat({
+            template: "+1 (xxx)xxx-xx-xx",
+            showFullTemplate: true,
+        });
+
+        valueInput.dispatchEvent(new FocusEvent('focus'));
+        valueInput.value = "+1 (23)   -  -  ";
+        valueInput.selectionStart = 6, valueInput.selectionEnd = 6;
+        simulateInputChange(true);
+        
+        expect(valueInput.value).toBe("+1 (23 )   -  -  ");
+        expect(valueInput.selectionStart).toBe(6);
     })
 })

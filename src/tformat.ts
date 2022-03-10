@@ -138,10 +138,10 @@ export default class TemplateFormatter {
             this._initEvents();
 
             if (this._inputElement.value)
-                this._updateInputValue(this._processNewInput(
-                    this._inputElement.value,
+                this._updateInputValue(
+                    this._processNewInput(this._inputElement.value, false),
                     false
-                ));
+                );
         }
 
         if (props.prefixes)
@@ -244,13 +244,16 @@ export default class TemplateFormatter {
         return text;
     }
 
-    /**
-     * 
-     * @param {string} text Text with prefix
-     * @returns {string} Text without prefix
-     */
+    removePrefixFormatted(formattedText: string): string {
+        const currentPrefix = this.currentPrefix;
+
+        return currentPrefix
+            ? formattedText.substring(formattedText.indexOf(currentPrefix) == 0 ? currentPrefix.length : 0)
+            : formattedText;
+    }
+
     removePrefix(text: string): string {
-        const textWithPrefix = text.replace(this.nonTemplateValueRegExp, '');
+        const textWithPrefix = this.removeNonTemplateVals(text);
         const currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
 
         let prefixEnd = 0;
@@ -259,6 +262,10 @@ export default class TemplateFormatter {
             prefixEnd++;
 
         return prefixEnd >= textWithPrefix.length ? '' : textWithPrefix.substring(prefixEnd);
+    }
+
+    removeNonTemplateVals(text: string): string {
+        return text.replace(this.nonTemplateValueRegExp, '');
     }
 
     _fillTemplateWithTextVals(text: string): string {
@@ -369,17 +376,6 @@ export default class TemplateFormatter {
     }
 
     /**
-     * Format text and update class state
-     * @param {InputEvent} event input event
-     * @returns {string} processed text
-     */
-    _processNewInputEvent(event: InputEvent): string {
-        return this._processNewInput(
-        (<HTMLInputElement>event.target).value,
-            event.inputType.startsWith("delete"));
-    }
-
-    /**
      * 
      * @param {string} formattedText 
      * @returns {string}
@@ -391,29 +387,52 @@ export default class TemplateFormatter {
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     }
 
-    _getInputCaretPosition(prevCaretPosition: number, inputValue: string) {
-        const lastInputValueIndex = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))?.index;
+    _findNextTemplateVal(text: string, startIndex: number) {
+        for (let i = startIndex + 1; i < text.length; i++)
+            if (this.templateValueRegExp.test(text[i]))
+                return i;
 
-        return lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
+        return -1;
     }
 
-    _updateInputValue(newValue: string) {
+    _getInputCaretPosition(currCaretPosition: number, inputValue: string, wasCharDeleted: boolean) {
+        // If first value was inputed
+        if (!wasCharDeleted) {
+            const noPrefixValueLen = this.removeNonTemplateVals(this.removePrefixFormatted(inputValue)).length;
+
+            if (noPrefixValueLen <= 1)
+                return this.currentPrefix.length + noPrefixValueLen;
+
+            if (this.removeNonTemplateVals(inputValue.substring(currCaretPosition)).length == 1)
+                return this._findNextTemplateVal(inputValue, currCaretPosition - 1) + 1;
+        }
+
+        return currCaretPosition;
+    }
+
+    _updateInputValue(newValue: string, wasCharDeleted: boolean) {
         if (!this._inputElement)
             return;
 
-        const selectionStart = this._inputElement.selectionStart || 0;
+        // Caret position changes before oninput event
+        const caretPosition = this._inputElement.selectionStart || 0
+
         this._inputElement.value = newValue;
-        if (this.showTemplateOnFocus)
-            this._inputElement.selectionStart = this._inputElement.selectionEnd 
-                = this._getInputCaretPosition(selectionStart, newValue);
+
+        const newCaretPosition = this._getInputCaretPosition(caretPosition, newValue, wasCharDeleted);
+        this._inputElement.setSelectionRange(newCaretPosition, newCaretPosition);
 
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     }
 
     onInput(event: Event) {
+        const inputEvent = event as InputEvent;
+        const wasCharDeleted = inputEvent.inputType.startsWith("delete");
+        
         this._updateInputValue(
-            this._processNewInputEvent(event as InputEvent)
+            this._processNewInput((<HTMLInputElement>event.target).value, wasCharDeleted),
+            wasCharDeleted
         );
     }
 
