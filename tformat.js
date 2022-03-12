@@ -337,13 +337,17 @@ var TemplateFormatter = /** @class */ (function () {
         return -1;
     };
     TemplateFormatter.prototype._getInputCaretPosition = function (currCaretPosition, inputValue, wasCharDeleted) {
-        // If first value was inputed
         if (!wasCharDeleted) {
             var noPrefixValueLen = this.removeNonTemplateVals(this.removePrefixFormatted(inputValue)).length;
+            // If first value was inputed
             if (noPrefixValueLen <= 1)
                 return this.currentPrefix.length + noPrefixValueLen;
-            if (this.removeNonTemplateVals(inputValue.substring(currCaretPosition)).length == 1)
-                return this._findNextTemplateVal(inputValue, currCaretPosition - 1) + 1;
+            // If need to skip non template chars
+            if (currCaretPosition > 0 && !this.templateValueRegExp.test(inputValue[currCaretPosition - 1])
+                && this.removeNonTemplateVals(inputValue.substring(currCaretPosition - 1)).length > 0) {
+                var nextTemplateValIndex = this._findNextTemplateVal(inputValue, currCaretPosition - 1);
+                return nextTemplateValIndex == -1 ? currCaretPosition : nextTemplateValIndex + 1;
+            }
         }
         return currCaretPosition;
     };

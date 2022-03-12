@@ -170,14 +170,16 @@ describe("Independent methods", function() {
         });
 
         expect(tformat._getInputCaretPosition(10, "+1 (234) 4", false)).toBe(10);
-        expect(tformat._getInputCaretPosition(6, "+1 (234) 5", false)).toBe(6);
+        expect(tformat._getInputCaretPosition(6, "+1 (253) 4", false)).toBe(6);
         expect(tformat._getInputCaretPosition(8, "+1 (234)", true)).toBe(8);
 
         expect(tformat._getInputCaretPosition(1, "+1 (", false)).toBe(4);
         expect(tformat._getInputCaretPosition(1, "+1 (2__) ___-__-__", false)).toBe(5);
         expect(tformat._getInputCaretPosition(4, "+1 (2__) ___-__-__", true)).toBe(4);
 
-        expect(tformat._getInputCaretPosition(8, "+1 (234) 2", false)).toBe(10);
+        expect(tformat._getInputCaretPosition(9, "+1 (234) 5", false)).toBe(10);
+        expect(tformat._getInputCaretPosition(10, "+1 (234) 65", false)).toBe(10);
+        expect(tformat._getInputCaretPosition(9, "+1 (234) 65", false)).toBe(10);
     })
 })
 

@@ -3,9 +3,8 @@ import React from 'react';
 import TemplateFormatter, { TFBaseProps } from '../tformat';
 
 export type TFReactState = {
-    formatter: TemplateFormatter,
+    value: string,
     wasCharDeleted: boolean,
-    prevCaretPosition: number,
 }
 
 export type TFReactProps = {
@@ -15,41 +14,44 @@ export type TFReactProps = {
 
 export class TFReact extends React.Component<TFReactProps, TFReactState> {
     inputRef: React.RefObject<HTMLInputElement>;
+    formatter: TemplateFormatter;
 
     constructor(props: TFReactProps) {
         super(props);
 
-        this.state = {
-            formatter: new TemplateFormatter(null, props as TFBaseProps),
-            wasCharDeleted: false,
-            prevCaretPosition: 0
-        }
+        this.inputRef = React.createRef<HTMLInputElement>();
+        this.formatter = new TemplateFormatter(null, this.props as TFBaseProps);
+        
+        let inputValue = String(this.props.value || '');
 
-        if (this.props.value) {
-            const formattedValue = this.state.formatter._processNewInput(this.props.value as string, false);
+        if (inputValue) {
+            const formattedValue = this.formatter._processNewInput(inputValue, false);
             this.props.onFormatted(
                 formattedValue,
-                this.state.formatter.getRawValue(formattedValue)
+                this.formatter.getRawValue(formattedValue)
             );
         }
 
-        this.inputRef = React.createRef<HTMLInputElement>();
+        this.state = {
+            value: inputValue,
+            wasCharDeleted: false,
+        }
     }
 
     updateValue(formattedValue: string) {
         this.props.onFormatted(
             formattedValue,
-            this.state.formatter.getRawValue(formattedValue)
+            this.formatter.getRawValue(formattedValue)
         );
 
+        const selectionPosition = this.formatter
+            ._getInputCaretPosition(this.inputRef.current?.selectionStart || 0, formattedValue, this.state.wasCharDeleted);
+
         this.setState({
-            formatter: this.state.formatter,
-            wasCharDeleted: this.state.wasCharDeleted,
-            prevCaretPosition: this.inputRef?.current?.selectionStart || 0
+            value: formattedValue,
+            wasCharDeleted: this.state.wasCharDeleted
         }, () => {
             if (this.props.showFullTemplate && this.inputRef.current) {
-                const selectionPosition = this.state.formatter._getInputCaretPosition(this.state.prevCaretPosition, this.props.value?.toString() || '');
-
                 this.inputRef.current.setSelectionRange(selectionPosition, selectionPosition);
             }
         })
@@ -57,7 +59,7 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
 
     onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         this.setState({
-            formatter: this.state.formatter,
+            value: this.state.value,
             wasCharDeleted: e.key == 'Backspace' || e.key == 'Delete'
         });
 
@@ -66,16 +68,16 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
 
     onChange(e: React.ChangeEvent<HTMLInputElement>) {
         this.updateValue(
-            this.state.formatter._processNewInput(e.target.value, this.state.wasCharDeleted)
+            this.formatter._processNewInput(e.target.value, this.state.wasCharDeleted)
         );
     }
 
     onFocus(e: React.FocusEvent<HTMLInputElement>) {
-        if (this.props.showPrefixOnFocus && !this.props.value) {
-            let firstPrefix = this.state.formatter._prefixes[0] || '';
+        if (this.props.showPrefixOnFocus && !this.state.value) {
+            let firstPrefix = this.formatter._prefixes[0] || '';
 
             this.updateValue(
-                this.state.formatter._processNewInput(firstPrefix, false)
+                this.formatter._processNewInput(firstPrefix, false)
             );
         }
 
@@ -83,7 +85,7 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
     }
 
     onBlur(e: React.FocusEvent<HTMLInputElement>) {
-        if (this.props.hidePrefixOnBlur && this.state.formatter.currentPrefix === this.props.value)
+        if (this.props.hidePrefixOnBlur && this.formatter.currentPrefix === this.state.value)
             this.updateValue('');
 
         this.props.onBlur && this.props.onBlur(e);
@@ -94,7 +96,7 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
             id={this.props.id}
             className={this.props.className}
             type={this.props.type}
-            value={this.props.value}
+            value={this.state.value}
             placeholder={this.props.placeholder}
             style={this.props.style}
             onCopy={this.props.onCopy}
@@ -108,7 +110,8 @@ export class TFReact extends React.Component<TFReactProps, TFReactState> {
             onKeyDown={this.onKeyDown.bind(this)}
             onKeyPress={this.props.onKeyPress}
             onKeyUp={this.props.onKeyUp}
-            onChange={this.onChange.bind(this)} />
+            onChange={this.onChange.bind(this)}
+             />
     }
 }
 

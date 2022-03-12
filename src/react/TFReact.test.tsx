@@ -89,8 +89,22 @@ describe("TFReact", () => {
 })
 
 describe("React full template display", () => {
+    test("Type first number", async () => {
+        let inputValue = "+1 4";
+        render(<TFReact value={inputValue} placeholder="Enter number"
+            template='+1 xxx xxx xx xx' onFormatted={(val, rawVal) => { inputValue = val }}
+            showFullTemplate={true} emptySpaceChar='_' />);
+
+        userEvent.type(screen.getByPlaceholderText("Enter number"), "2");
+
+        await waitFor(() => {
+            expect(inputValue).toBe("+1 42_ ___ __ __");
+            expect(screen.getByPlaceholderText<HTMLInputElement>("Enter number").selectionStart).toBe(5);
+        })
+    })
+
     test("Type number in the middle", async () => {
-        let inputValue = "+1 234 ";
+        let inputValue = "+1 234";
         render(<TFReact value={inputValue} placeholder="Enter number"
                 template='+1 xxx xxx xx xx' onFormatted={(val, rawVal) => { inputValue = val }}
                 showFullTemplate={true} emptySpaceChar='_' />);
@@ -100,7 +114,8 @@ describe("React full template display", () => {
         userEvent.type(screen.getByPlaceholderText("Enter number"), "1", { skipClick: true });
 
         await waitFor(() => {
-            expect(inputValue).toBe("+1 231 4__ __ __")
+            expect(inputValue).toBe("+1 213 4__ __ __");
+            expect(screen.getByPlaceholderText<HTMLInputElement>("Enter number").selectionStart).toBe(5);
         });
     })
 })
