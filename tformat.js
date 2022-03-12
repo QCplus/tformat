@@ -39,7 +39,7 @@ var TemplateFormatter = /** @class */ (function () {
                 this._initHiddenInput(props.templateForHidden || '');
             this._initEvents();
             if (this._inputElement.value)
-                this._updateInputValue(this._processNewInput(this._inputElement.value, false));
+                this._updateInputValue(this._processNewInput(this._inputElement.value, false), false);
         }
         if (props.prefixes)
             this._prefixes = this._prefixes.concat(props.prefixes);
@@ -213,18 +213,22 @@ var TemplateFormatter = /** @class */ (function () {
             return text + this.template.slice(startOfPostfix + 1);
         return text;
     };
-    /**
-     *
-     * @param {string} text Text with prefix
-     * @returns {string} Text without prefix
-     */
+    TemplateFormatter.prototype.removePrefixFormatted = function (formattedText) {
+        var currentPrefix = this.currentPrefix;
+        return currentPrefix
+            ? formattedText.substring(formattedText.indexOf(currentPrefix) == 0 ? currentPrefix.length : 0)
+            : formattedText;
+    };
     TemplateFormatter.prototype.removePrefix = function (text) {
-        var textWithPrefix = text.replace(this.nonTemplateValueRegExp, '');
+        var textWithPrefix = this.removeNonTemplateVals(text);
         var currentPrefix = this.currentPrefix.replace(this.nonTemplateValueRegExp, '');
         var prefixEnd = 0;
         while (textWithPrefix[prefixEnd] && currentPrefix[prefixEnd] === textWithPrefix[prefixEnd])
             prefixEnd++;
         return prefixEnd >= textWithPrefix.length ? '' : textWithPrefix.substring(prefixEnd);
+    };
+    TemplateFormatter.prototype.removeNonTemplateVals = function (text) {
+        return text.replace(this.nonTemplateValueRegExp, '');
     };
     TemplateFormatter.prototype._fillTemplateWithTextVals = function (text) {
         var _this = this;
@@ -317,14 +321,6 @@ var TemplateFormatter = /** @class */ (function () {
         return formattedText;
     };
     /**
-     * Format text and update class state
-     * @param {InputEvent} event input event
-     * @returns {string} processed text
-     */
-    TemplateFormatter.prototype._processNewInputEvent = function (event) {
-        return this._processNewInput(event.target.value, event.inputType.startsWith("delete"));
-    };
-    /**
      *
      * @param {string} formattedText
      * @returns {string}
@@ -334,28 +330,42 @@ var TemplateFormatter = /** @class */ (function () {
             return '';
         return formattedText.replace(this.nonTemplateValueRegExp, '');
     };
-    TemplateFormatter.prototype._moveInputCaret = function (prevCaretPosition) {
-        var _a, _b;
-        if (!this._inputElement)
-            return;
-        var inputValue = ((_a = this._inputElement) === null || _a === void 0 ? void 0 : _a.value) || '';
-        var lastInputValueIndex = (_b = this.templateValueRegExp.exec(inputValue.split('').reverse().join(''))) === null || _b === void 0 ? void 0 : _b.index;
-        var selectionStart = lastInputValueIndex ? inputValue.length - lastInputValueIndex : prevCaretPosition;
-        this._inputElement.selectionStart = selectionStart;
-        this._inputElement.selectionEnd = selectionStart;
+    TemplateFormatter.prototype._findNextTemplateVal = function (text, startIndex) {
+        for (var i = startIndex + 1; i < text.length; i++)
+            if (this.templateValueRegExp.test(text[i]))
+                return i;
+        return -1;
     };
-    TemplateFormatter.prototype._updateInputValue = function (newValue) {
+    TemplateFormatter.prototype._getInputCaretPosition = function (currCaretPosition, inputValue, wasCharDeleted) {
+        if (!wasCharDeleted) {
+            var noPrefixValueLen = this.removeNonTemplateVals(this.removePrefixFormatted(inputValue)).length;
+            // If first value was inputed
+            if (noPrefixValueLen <= 1)
+                return this.currentPrefix.length + noPrefixValueLen;
+            // If need to skip non template chars
+            if (currCaretPosition > 0 && !this.templateValueRegExp.test(inputValue[currCaretPosition - 1])
+                && this.removeNonTemplateVals(inputValue.substring(currCaretPosition - 1)).length > 0) {
+                var nextTemplateValIndex = this._findNextTemplateVal(inputValue, currCaretPosition - 1);
+                return nextTemplateValIndex == -1 ? currCaretPosition : nextTemplateValIndex + 1;
+            }
+        }
+        return currCaretPosition;
+    };
+    TemplateFormatter.prototype._updateInputValue = function (newValue, wasCharDeleted) {
         if (!this._inputElement)
             return;
-        var selectionStart = this._inputElement.selectionStart;
+        // Caret position changes before oninput event
+        var caretPosition = this._inputElement.selectionStart || 0;
         this._inputElement.value = newValue;
-        if (this.showTemplateOnFocus)
-            this._moveInputCaret(selectionStart || 0);
+        var newCaretPosition = this._getInputCaretPosition(caretPosition, newValue, wasCharDeleted);
+        this._inputElement.setSelectionRange(newCaretPosition, newCaretPosition);
         if (this._clonedInput)
             this._clonedInput.value = this._inputElement.value.replace(this.nonTemplateValueRegExp, '');
     };
     TemplateFormatter.prototype.onInput = function (event) {
-        this._updateInputValue(this._processNewInputEvent(event));
+        var inputEvent = event;
+        var wasCharDeleted = inputEvent.inputType.startsWith("delete");
+        this._updateInputValue(this._processNewInput(event.target.value, wasCharDeleted), wasCharDeleted);
     };
     TemplateFormatter.prototype.onFocus = function (event) {
         if (this.showPrefixOnFocus && this._inputElement && this._inputElement.value == '')
