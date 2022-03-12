@@ -62,7 +62,6 @@ const MyComponent = () => {
 
     return (
         <TFReact
-            value={formattedValue}
             template="+1 xxx xxx"
             showPrefixOnFocus={true}
             onFormatted={(val, rawVal) => { setFormattedValue(val); setUnformattedValue(rawVal); }} />
