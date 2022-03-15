@@ -153,7 +153,10 @@ export default class TemplateFormatter {
         this.showTemplateOnFocus = props.showFullTemplate ? true : false;
 
         if (props.emptySpaceChar)
-            this.emptySpaceChar = props.emptySpaceChar[0];
+            if (this.templateValueRegExp.test(props.emptySpaceChar))
+                console.error("emptySpaceChar can't be a number!");
+            else
+                this.emptySpaceChar = props.emptySpaceChar[0];
     }
 
     /**
