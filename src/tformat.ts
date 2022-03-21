@@ -9,14 +9,12 @@ export type TFBaseProps = {
 
 export type TemplateFormatterProps = {
     createHiddenInput?: boolean;
-    templateForHidden?: string;
 } & TFBaseProps;
 
 export default class TemplateFormatter {
     _inputElement: HTMLInputElement | null | undefined;
     _clonedInput: HTMLInputElement | undefined;
     _template = "";
-    _templateForHiddenInput = "";
     _prefixIndex = 0;
     
     /* Constructor props */
@@ -55,7 +53,6 @@ export default class TemplateFormatter {
         this._prefixes[0] = newValue.split(this.templateChar)[0];
 
         this._template = newValue.substring(newValue.indexOf(this.templateChar));
-        this._templateForHiddenInput = this._template;
     }
 
     /**
@@ -86,11 +83,7 @@ export default class TemplateFormatter {
         this._inputElement?.addEventListener('blur', this.onBlur.bind(this));
     }
 
-    /**
-     * 
-     * @param {string} templateForHidden 
-     */
-    _initHiddenInput(templateForHidden: string) {
+    _initHiddenInput() {
         if (!this._inputElement)
             return;
 
@@ -100,8 +93,6 @@ export default class TemplateFormatter {
         this._inputElement.setAttribute("name", '');
         this._clonedInput.style.display = "none";
         this._clonedInput.setAttribute("id", '');
-
-        this._templateForHiddenInput = templateForHidden ? templateForHidden : this.template;
     }
 
     /**
@@ -133,7 +124,7 @@ export default class TemplateFormatter {
             }
 
             if (props.createHiddenInput)
-                this._initHiddenInput(props.templateForHidden || '');
+                this._initHiddenInput();
 
             this._initEvents();
 
@@ -373,9 +364,7 @@ export default class TemplateFormatter {
                 return newInputText;
         }
 
-        const formattedText = this.formatText(newInputText);
-
-        return formattedText;
+        return this.formatText(newInputText);
     }
 
     /**

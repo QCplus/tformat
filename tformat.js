@@ -7,7 +7,6 @@ var TemplateFormatter = /** @class */ (function () {
      */
     function TemplateFormatter(inputElement, props) {
         this._template = "";
-        this._templateForHiddenInput = "";
         this._prefixIndex = 0;
         /* Constructor props */
         this._prefixes = new Array();
@@ -36,7 +35,7 @@ var TemplateFormatter = /** @class */ (function () {
                     this.showPrefixOnFocus = true;
             }
             if (props.createHiddenInput)
-                this._initHiddenInput(props.templateForHidden || '');
+                this._initHiddenInput();
             this._initEvents();
             if (this._inputElement.value)
                 this._updateInputValue(this._processNewInput(this._inputElement.value, false), false);
@@ -47,7 +46,10 @@ var TemplateFormatter = /** @class */ (function () {
             this.hidePrefixOnBlur = props.hidePrefixOnBlur ? true : false;
         this.showTemplateOnFocus = props.showFullTemplate ? true : false;
         if (props.emptySpaceChar)
-            this.emptySpaceChar = props.emptySpaceChar[0];
+            if (this.templateValueRegExp.test(props.emptySpaceChar))
+                console.error("emptySpaceChar can't be a number!");
+            else
+                this.emptySpaceChar = props.emptySpaceChar[0];
     }
     Object.defineProperty(TemplateFormatter.prototype, "templateChar", {
         get: function () {
@@ -85,7 +87,6 @@ var TemplateFormatter = /** @class */ (function () {
                 throw 'Template must be a string';
             this._prefixes[0] = newValue.split(this.templateChar)[0];
             this._template = newValue.substring(newValue.indexOf(this.templateChar));
-            this._templateForHiddenInput = this._template;
         },
         enumerable: false,
         configurable: true
@@ -122,11 +123,7 @@ var TemplateFormatter = /** @class */ (function () {
         (_b = this._inputElement) === null || _b === void 0 ? void 0 : _b.addEventListener('focus', this.onFocus.bind(this));
         (_c = this._inputElement) === null || _c === void 0 ? void 0 : _c.addEventListener('blur', this.onBlur.bind(this));
     };
-    /**
-     *
-     * @param {string} templateForHidden
-     */
-    TemplateFormatter.prototype._initHiddenInput = function (templateForHidden) {
+    TemplateFormatter.prototype._initHiddenInput = function () {
         if (!this._inputElement)
             return;
         this._clonedInput = this._inputElement.cloneNode(true);
@@ -134,7 +131,6 @@ var TemplateFormatter = /** @class */ (function () {
         this._inputElement.setAttribute("name", '');
         this._clonedInput.style.display = "none";
         this._clonedInput.setAttribute("id", '');
-        this._templateForHiddenInput = templateForHidden ? templateForHidden : this.template;
     };
     /**
      *
@@ -317,8 +313,7 @@ var TemplateFormatter = /** @class */ (function () {
             if (!this.showTemplateOnFocus && this.isPartiallyMatchTemplate(newInputText))
                 return newInputText;
         }
-        var formattedText = this.formatText(newInputText);
-        return formattedText;
+        return this.formatText(newInputText);
     };
     /**
      *

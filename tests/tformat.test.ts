@@ -397,18 +397,6 @@ describe("Hidden input", function() {
         expect(valueInput != inputClone).toBeTruthy();
         expect(inputClone?.value).toBe("1234");
     })
-
-    test("Test on base template change", function() {
-        let tformat = new TemplateFormatter(valueInput, {
-            template: "1 x x x",
-            createHiddenInput: true
-        });
-
-        expect(tformat._templateForHiddenInput).toBe(tformat.template);
-
-        tformat.template = "2 xxx";
-        expect(tformat._templateForHiddenInput).toBe(tformat.template);
-    })
 })
 
 describe("General", function() {
