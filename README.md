@@ -1,3 +1,6 @@
+![npm](https://img.shields.io/npm/dy/tformat.js?style=flat-square)
+![npm](https://img.shields.io/npm/v/tformat.js?label=version&style=flat-square)
+
 # tformat.js
 
 Tformat.js is a lightweight library for number formatting (credit card and phone numbers, for example)
@@ -26,7 +29,7 @@ Then import it
 <script src="tformat.min.js"></script>
 ```
 
-To apply a tformat to input element with id `inputField`, create a new class by passing element id or element itself
+To apply a tformat to input element with id `inputField`, create a new class by passing element id or `HTMLInputElement`
 
 ```js
 let tformat = new TemplateFormatter('inputField', { 
@@ -91,7 +94,7 @@ Additional options goes in second parameter as one object. Possible object prope
 | createHiddenInput| boolean  | No        | false   | If `true` then hidden clone of input will be created, that contains only numbers. It can be used in form submitting |
 | hidePrefixOnBlur | boolean  | No        | true    | If value input equals template prefix then value will be cleared |
 | showFullTemplate | boolean  | No        | false   | If `true` then full template will be shown. [See examples](https://qcplus.github.io/tformat/) |
-| emptySpaceChar   | string   | No        | ' '| Used as placeholder for `x` characters if showFullTemplate is `true` |
+| emptySpaceChar   | string   | No        | ' ' | Used as placeholder for `x` characters if showFullTemplate is `true` |
 
 ## Properties
 
